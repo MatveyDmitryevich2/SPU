@@ -17,5 +17,5 @@ enum Oshibki_SPU SPUConstrtor(Processor_t* spu)
     spu->vikluchatel_cikla = 0;
     spu->massiv_comand = chooo1;
 
-    return NET_OSHIBOK;
+    return NET_OSHIBOK_SPU;
 }

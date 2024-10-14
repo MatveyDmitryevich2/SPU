@@ -13,10 +13,9 @@
 
 enum Oshibki_SPU
 {
-    NET_OSHIBOK                            = 0,
+    NET_OSHIBOK_SPU                            = 0,
     UKAZTENEL_NA_STRUKTURU_SPU_POEHAL      = 1,
     UKAZTENEL_NA_MASSIV_SPU_POEHAL         = 2,
-    OSHIBKA_V_VINIMANII_ZNACHENIA_IS_STEKA = 3,
 };
 
 const int KOLICHESTVO_REGISTROV = 4;

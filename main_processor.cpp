@@ -15,7 +15,8 @@ int main(void)
     Processor_t spu = {};
     Stack_t stk = {};
 
-    if (StackConstrtor(&stk, 2) > 0) assert(0); // FIXME обрабатывать через if и функцию обработки 
+    if (StackConstrtor(&stk, 2) > 0) assert(0);
+    if (SPUConstrtor(&spu) > 0) assert(0); // FIXME обрабатывать через if и функцию обработки 
 
     while (spu.vikluchatel_cikla == 0)
     {
