@@ -11,14 +11,34 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+const int RAZMER_COMANDI = 25;
+const int MAX_COLICHESTVO_METOK = 4;
+
+struct Metki_t
+{
+    int64_t adres_stroki;
+    char metka[25];
+};
+
 struct Asembler_t
 {
     FILE *komandi;
     FILE* komandi_v_chislah;
+
     uint64_t razmer_faila;
     char* buffer;
     int64_t* massiv_comand;
-    int64_t ateracia_dla_zapisi_slova;
+    int64_t cteracia_dla_massiv_comand;
+    
+    struct Metki_t* struct_metok;
+};
+
+enum Oshibki_Asemblera
+{
+    NET_OSHIBOK                                 = 0,
+    UKAZTENEL_NA_STRUKTURU_ASEMBLER_POEHAL      = 1,
+    UKAZTENEL_NA_MASSIV_ASEMBLER_POEHAL         = 2,
+    OSHINKA_PRI_OTKRITII_FAILA                  = 3
 };
 
 const char Comandi_push1[]  = "push";
@@ -49,8 +69,8 @@ const char Comandi_cx1[]    =  "cx";
 const char Comandi_dx1[]    =  "dx";
 
 enum Comandi Menaet_komandu_na_enum(char* bufer_cmd);
-void AsemblerDtor(FILE* komandi_v_chislah, FILE* komandi, char* buffer, int64_t* massiv_comand);
-
-// FIXME сделать структуру ассемблера для хранения состояния и всякой хрени + ctor dtor
+enum Oshibki_Asemblera AsemblerCtor(Asembler_t* spu);
+enum Oshibki_Asemblera Zapis_comand(Asembler_t* spu);
+void AsemblerDtor(Asembler_t* spu);
 
 #endif //ASEMBLER_H

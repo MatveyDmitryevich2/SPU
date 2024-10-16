@@ -229,7 +229,7 @@ int StackDtor(Stack_t* stk)
 
     for (size_t i = 0; i < stk->capacity; i++) { stk->array_data[i] = 0; }
 
-    free(stk->array_data - 2);
+    free(stk->array_data - 1);
     stk->array_data = NULL;
 
 

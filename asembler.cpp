@@ -9,15 +9,75 @@
 #include <assert.h>
 #include <stdint.h>
 
-uint64_t Chitaet_razmer_faila(FILE *komandi)
+enum Oshibki_Asemblera AsemblerCtor(Asembler_t* spu)
+{    
+    if (spu == NULL) { return UKAZTENEL_NA_STRUKTURU_ASEMBLER_POEHAL; }
+
+    spu->komandi = fopen("Komandi.txt", "r");
+    spu->komandi_v_chislah = fopen("Chislovie_komani.txt", "w + b");
+    if ((spu->komandi == nullptr) || (spu->komandi_v_chislah == nullptr))
+    {
+        fprintf(stderr, "Файл не открылся, как и твоя головка члена");
+        return OSHINKA_PRI_OTKRITII_FAILA;
+    }
+
+    spu->razmer_faila = Chitaet_razmer_faila(spu->komandi);
+    spu->buffer = (char*)calloc(spu->razmer_faila + 1, sizeof(char));
+    fread(spu->buffer, sizeof(char), spu->razmer_faila, spu->komandi);
+
+    spu->massiv_comand = (int64_t*)calloc(spu->razmer_faila + 1, sizeof(int64_t));
+    //fprintf(stderr, "\n%lu\n", spu->razmer_faila);
+    //fprintf(stderr, "%s\n", spu->buffer);
+    spu->struct_metok = (struct Metki_t*)calloc(MAX_COLICHESTVO_METOK, sizeof(Metki_t));
+
+    for (int i = 0; i < MAX_COLICHESTVO_METOK; i++)
+    {
+        spu->struct_metok[i].adres_stroki = -1;
+    }
+
+    return NET_OSHIBOK;
+}
+
+enum Oshibki_Asemblera Zapis_comand(Asembler_t* spu)
 {
-    assert(komandi != NULL);
+    if (spu == NULL) { return UKAZTENEL_NA_STRUKTURU_ASEMBLER_POEHAL; }
 
-    fseek(komandi, 0, SEEK_END);
-    uint64_t razmer_faila = ftell(komandi);
-    fseek(komandi, 0, SEEK_SET);
+    char bufer_cmd[RAZMER_COMANDI] = "";
 
-    return razmer_faila;
+    int64_t ateracia_dla_zapisi_slova = 0;
+    for (uint64_t iteracia_po_simvolam = 0; iteracia_po_simvolam <= spu->razmer_faila; 
+         iteracia_po_simvolam++, ateracia_dla_zapisi_slova++)
+    {
+        if ((spu->buffer[iteracia_po_simvolam] != ' ') && (spu->buffer[iteracia_po_simvolam] != '\n'))
+        {
+            fprintf(stderr, "a: %ld\n", ateracia_dla_zapisi_slova);
+            bufer_cmd[ateracia_dla_zapisi_slova] = spu->buffer[iteracia_po_simvolam];
+            fprintf(stderr, "%c\n", spu->buffer[iteracia_po_simvolam]);
+        }
+
+        else
+        {
+            fprintf(stderr, "cmd: %s\n", bufer_cmd);
+
+            Comandi kakaia_komanda = Menaet_komandu_na_enum(bufer_cmd);
+            if (kakaia_komanda < 0) 
+            { 
+                spu->massiv_comand[spu->cteracia_dla_massiv_comand] = strtol(bufer_cmd, NULL, 10); 
+            }
+            else 
+            { 
+                spu->massiv_comand[spu->cteracia_dla_massiv_comand] = kakaia_komanda; 
+            }
+
+            spu->cteracia_dla_massiv_comand++;
+
+            memset(bufer_cmd, 0, RAZMER_COMANDI);
+
+            ateracia_dla_zapisi_slova = -1;
+        }
+    }
+
+    return NET_OSHIBOK;
 }
 
 enum Comandi Menaet_komandu_na_enum(char* bufer_cmd)
@@ -50,14 +110,14 @@ enum Comandi Menaet_komandu_na_enum(char* bufer_cmd)
     else                                                                      { return Comandi_chislo;}
 }
 
-void AsemblerDtor(FILE* komandi_v_chislah, FILE* komandi, char* buffer, int64_t* massiv_comand)
+void AsemblerDtor(Asembler_t* spu)
 {
-    fclose (komandi_v_chislah);
-    fclose (komandi);
+    fclose (spu->komandi_v_chislah);
+    fclose (spu->komandi);
 
-    free(buffer);
-    buffer = NULL;
+    free(spu->buffer);
+    spu->buffer = NULL;
 
-    free(massiv_comand);
-    massiv_comand = NULL;
+    free(spu->massiv_comand);
+    spu->massiv_comand = NULL;
 }
