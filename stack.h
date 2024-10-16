@@ -8,7 +8,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-typedef int StackElem_t;
+typedef int StackElem_t; // FIXME изменить с int на int64_t (такой же тип как и у комманды)
 const int SHAG_V_REALOC = 2;
 const int OBRATNIY_SHAG_V_REALOC = 4;
 const uint64_t KONOREYKA = 29304148;

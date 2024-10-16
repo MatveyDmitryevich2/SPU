@@ -13,17 +13,18 @@
 
 enum Oshibki_SPU
 {
-    NET_OSHIBOK_SPU                            = 0,
+    NET_OSHIBOK_SPU                        = 0,
     UKAZTENEL_NA_STRUKTURU_SPU_POEHAL      = 1,
     UKAZTENEL_NA_MASSIV_SPU_POEHAL         = 2,
 };
 
 const int KOLICHESTVO_REGISTROV = 4;
-const int PEREHOD_NA_FUNKCIU = 1; 
+const int PEREHOD_NA_KOMANDU = 1; 
 const int PEREHOD_NA_AEGUMENT = 1;
 
 //#define DEBUG_FPRINTF
 
+// FIXME вынести в utils.h
 #ifdef DEBUG_FPRINTF
     #define DEB_PR(...) fprintf(stderr, __VA_ARGS__);
 #else
@@ -39,6 +40,8 @@ struct Processor_t
     int registers[KOLICHESTVO_REGISTROV];
 };
 
-enum Oshibki_SPU SPUConstrtor(Processor_t* spu);
+int64_t* Chtenie_komand_is_faila();
+enum Oshibki_SPU SPUConstrtor(Processor_t* spu, int64_t* massiv_comand_bufer);
+int SPUDtor(int64_t* massiv_comand_bufer);
 
 #endif // PROCESSOR_H

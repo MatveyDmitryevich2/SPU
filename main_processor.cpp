@@ -8,24 +8,26 @@
 
 #include "stack.h"
 #include "processor.h"
-#include "asembler.h"
+#include "funkcii_globalnie.h"
+#include "schitivanie_faila.h"
 
 int main(void)
 {
-    Processor_t spu = {};
-    Stack_t stk = {};
+    int64_t* massiv_comand_bufer = Chtenie_komand_is_faila();
 
-    if (StackConstrtor(&stk, 2) > 0) assert(0);
-    if (SPUConstrtor(&spu) > 0) assert(0); // FIXME обрабатывать через if и функцию обработки 
+    Processor_t spu = {}; // FIXME обрабатывать через if и функцию обработки
+    if (SPUConstrtor(&spu, massiv_comand_bufer) > 0) { assert(0); }
 
-    while (spu.vikluchatel_cikla == 0)
+    // FIXME вынести в функцию execute
+    while (spu.vikluchatel_cikla == 0) 
     {
         switch (spu.massiv_comand[spu.ip])
         {
             case Comandi_push:
             {
-                if (StackComandi_push(&stk, spu.massiv_comand[spu.ip + PEREHOD_NA_AEGUMENT]) > 0) assert(0);
-                spu.ip += PEREHOD_NA_FUNKCIU + PEREHOD_NA_AEGUMENT;
+                if (StackComandi_push(&(spu.stk), (int)spu.massiv_comand[spu.ip + PEREHOD_NA_AEGUMENT]) > 0) { assert(0); }
+                
+                spu.ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT;
                 DEB_PR("1");
             }
             break;
@@ -34,12 +36,12 @@ int main(void)
             {
                 int a = 0;
                 int b = 0;
-                if (StackComandi_pop(&stk, &a) > 0) assert(0);
-                if (StackComandi_pop(&stk, &b) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &a) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &b) > 0) assert(0);
 
-                if (StackComandi_push(&stk, b + a) > 0) assert(0);
+                if (StackComandi_push(&(spu.stk), b + a) > 0) assert(0);
                 
-                spu.ip += PEREHOD_NA_FUNKCIU;
+                spu.ip += PEREHOD_NA_KOMANDU;
                 DEB_PR("2");
             }
             break;
@@ -48,12 +50,12 @@ int main(void)
             {
                 int a = 0;
                 int b = 0;
-                if (StackComandi_pop(&stk, &a) > 0) assert(0);
-                if (StackComandi_pop(&stk, &b) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &a) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &b) > 0) assert(0);
 
-                if (StackComandi_push(&stk, b - a) > 0) assert(0);
+                if (StackComandi_push(&(spu.stk), b - a) > 0) assert(0);
                 
-                spu.ip += PEREHOD_NA_FUNKCIU;
+                spu.ip += PEREHOD_NA_KOMANDU;
                 DEB_PR("4");
             }
             break;
@@ -62,12 +64,12 @@ int main(void)
             {
                 int a = 0;
                 int b = 0;
-                if (StackComandi_pop(&stk, &a) > 0) assert(0);
-                if (StackComandi_pop(&stk, &b) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &a) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &b) > 0) assert(0);
 
-                if (StackComandi_push(&stk, b * a) > 0) assert(0);
+                if (StackComandi_push(&(spu.stk), b * a) > 0) assert(0);
                 
-                spu.ip += PEREHOD_NA_FUNKCIU;
+                spu.ip += PEREHOD_NA_KOMANDU;
                 DEB_PR("5");
             }
             break;
@@ -76,12 +78,12 @@ int main(void)
             {
                 int a = 0;
                 int b = 0;
-                if (StackComandi_pop(&stk, &a) > 0) assert(0);
-                if (StackComandi_pop(&stk, &b) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &a) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &b) > 0) assert(0);
 
-                if (StackComandi_push(&stk, b / a) > 0) assert(0);
+                if (StackComandi_push(&(spu.stk), b / a) > 0) assert(0);
 
-                spu.ip += PEREHOD_NA_FUNKCIU;
+                spu.ip += PEREHOD_NA_KOMANDU;
                 DEB_PR("6");
             }
             break;
@@ -89,11 +91,11 @@ int main(void)
             case Comandi_out:
             {
                 int a = 0;
-                if (StackComandi_pop(&stk, &a) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &a) > 0) assert(0);
 
                 printf("%d\n", a);
                 
-                spu.ip += PEREHOD_NA_FUNKCIU;
+                spu.ip += PEREHOD_NA_KOMANDU;
                 DEB_PR("7");
             }
             break;
@@ -102,9 +104,9 @@ int main(void)
             {
                 int a = 0;
                 scanf("%d", &a);
-                if (StackComandi_push(&stk, spu.massiv_comand[a]) > 0) assert(0);
+                if (StackComandi_push(&(spu.stk), (int)spu.massiv_comand[a]) > 0) assert(0);
 
-                spu.ip += PEREHOD_NA_FUNKCIU;
+                spu.ip += PEREHOD_NA_KOMANDU;
                 DEB_PR("8");
             }
             break;
@@ -112,11 +114,11 @@ int main(void)
             case Comandi_sqrt:
             {
                 int a = 0;
-                if (StackComandi_pop(&stk, &a) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &a) > 0) assert(0);
 
-                if (StackComandi_push(&stk, sqrt(a)) > 0) assert(0);
+                if (StackComandi_push(&(spu.stk), sqrt(a)) > 0) assert(0);
                 
-                spu.ip += PEREHOD_NA_FUNKCIU;
+                spu.ip += PEREHOD_NA_KOMANDU;
                 DEB_PR("9");
             }
             break;
@@ -124,11 +126,11 @@ int main(void)
             case Comandi_sin:
             {
                 int a = 0;
-                if (StackComandi_pop(&stk, &a) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &a) > 0) assert(0);
 
-                if (StackComandi_push(&stk, sin(a)) > 0) assert(0);
+                if (StackComandi_push(&(spu.stk), sin(a)) > 0) assert(0);
                 
-                spu.ip += PEREHOD_NA_FUNKCIU;
+                spu.ip += PEREHOD_NA_KOMANDU;
                 DEB_PR("10");
             }
             break;
@@ -136,24 +138,24 @@ int main(void)
             case Comandi_cos:
             {
                 int a = 0;
-                if (StackComandi_pop(&stk, &a) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &a) > 0) assert(0);
 
-                if (StackComandi_push(&stk, cos(a)) > 0) assert(0);
+                if (StackComandi_push(&(spu.stk), cos(a)) > 0) assert(0);
                 
-                spu.ip += PEREHOD_NA_FUNKCIU;
+                spu.ip += PEREHOD_NA_KOMANDU;
                 DEB_PR("11");
             }
             break;
 
             case Comandi_dump:
             {
-                for (long long i = (long long)stk.vacant_place - 1; i >= 0; i--)
+                for (long long i = (long long)spu.stk.vacant_place - 1; i >= 0; i--)
                 {
                     fprintf(stderr, "   [%lld] = ", i);
-                    fprintf(stderr, "%lu\n", (long unsigned)stk.array_data[i]);
+                    fprintf(stderr, "%lu\n", (long unsigned)spu.stk.array_data[i]);
                 }
 
-                spu.ip += PEREHOD_NA_FUNKCIU;
+                spu.ip += PEREHOD_NA_KOMANDU;
                 DEB_PR("12");
             }
             break;
@@ -161,7 +163,7 @@ int main(void)
             case Comandi_hlt:
             {
                 DEB_PR("13");
-                spu.vikluchatel_cikla = PEREHOD_NA_FUNKCIU;
+                spu.vikluchatel_cikla = PEREHOD_NA_KOMANDU;
             }
             break;
 
@@ -169,11 +171,11 @@ int main(void)
             {
                 int a = 0;
                 int b = 0;
-                if (StackComandi_pop(&stk, &a) > 0) assert(0);
-                if (StackComandi_pop(&stk, &b) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &a) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &b) > 0) assert(0);
                 
-                if (b > a) { spu.ip = 0; }                      
-                else { spu.ip += PEREHOD_NA_FUNKCIU + PEREHOD_NA_AEGUMENT; }
+                if (b > a) { spu.ip = spu.massiv_comand[spu.ip + PEREHOD_NA_KOMANDU]; }                      
+                else { spu.ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
                 DEB_PR("14");
             }
             break;
@@ -182,11 +184,11 @@ int main(void)
             {
                 int a = 0;
                 int b = 0;
-                if (StackComandi_pop(&stk, &a) > 0) assert(0);
-                if (StackComandi_pop(&stk, &b) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &a) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &b) > 0) assert(0);
 
-                if (b >= a) { spu.ip = 0; }                      
-                else { spu.ip += PEREHOD_NA_FUNKCIU + PEREHOD_NA_AEGUMENT; }
+                if (b >= a) { spu.ip = spu.massiv_comand[spu.ip + PEREHOD_NA_KOMANDU]; }                      
+                else { spu.ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
                 DEB_PR("15");
             }
             break;
@@ -195,11 +197,11 @@ int main(void)
             {
                 int a = 0;
                 int b = 0;
-                if (StackComandi_pop(&stk, &a) > 0) assert(0);
-                if (StackComandi_pop(&stk, &b) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &a) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &b) > 0) assert(0);
 
-                if (b < a) { spu.ip = 0; }                      
-                else { spu.ip += PEREHOD_NA_FUNKCIU + PEREHOD_NA_AEGUMENT; }
+                if (b < a) { spu.ip = spu.massiv_comand[spu.ip + PEREHOD_NA_KOMANDU]; }                      
+                else { spu.ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
             DEB_PR("16");
             }
             break;
@@ -208,11 +210,11 @@ int main(void)
             {
                 int a = 0;
                 int b = 0;
-                if (StackComandi_pop(&stk, &a) > 0) assert(0);
-                if (StackComandi_pop(&stk, &b) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &a) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &b) > 0) assert(0);
 
-                if (b <= a) { spu.ip = 4; }                      
-                else { spu.ip += PEREHOD_NA_FUNKCIU + PEREHOD_NA_AEGUMENT; }
+                if (b <= a) { spu.ip = spu.massiv_comand[spu.ip + PEREHOD_NA_KOMANDU]; }                      
+                else { spu.ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
                 DEB_PR("17");
             }
             break;
@@ -221,11 +223,11 @@ int main(void)
             {
                 int a = 0;
                 int b = 0;
-                if (StackComandi_pop(&stk, &a) > 0) assert(0);
-                if (StackComandi_pop(&stk, &b) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &a) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &b) > 0) assert(0);
 
-                if (b == a) { spu.ip = 0; }                      
-                else { spu.ip += PEREHOD_NA_FUNKCIU + PEREHOD_NA_AEGUMENT; }
+                if (b == a) { spu.ip = spu.massiv_comand[spu.ip + PEREHOD_NA_KOMANDU]; }                      
+                else { spu.ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
                 DEB_PR("18");
             }
             break;
@@ -234,18 +236,18 @@ int main(void)
             {
                 int a = 0;
                 int b = 0;
-                if (StackComandi_pop(&stk, &a) > 0) assert(0);
-                if (StackComandi_pop(&stk, &b) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &a) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &b) > 0) assert(0);
 
-                if(b != a) { spu.ip = 0; }                      
-                else { spu.ip += PEREHOD_NA_FUNKCIU + PEREHOD_NA_AEGUMENT; }
+                if(b != a) { spu.ip = spu.massiv_comand[spu.ip + PEREHOD_NA_KOMANDU]; }                      
+                else { spu.ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
                 DEB_PR("19");
             }
             break;
 
             case Comandi_jmp:
             {
-                spu.ip = 0;
+                spu.ip = spu.massiv_comand[spu.ip + PEREHOD_NA_KOMANDU];
                 DEB_PR("20");
             }
             break;
@@ -253,19 +255,19 @@ int main(void)
             case Comandi_popr:
             {
                 int a = 0;
-                if (StackComandi_pop(&stk, &a) > 0) assert(0);
+                if (StackComandi_pop(&(spu.stk), &a) > 0) assert(0);
 
                 spu.registers[spu.massiv_comand[spu.ip + PEREHOD_NA_AEGUMENT]] = a;
-                spu.ip += PEREHOD_NA_FUNKCIU + PEREHOD_NA_AEGUMENT;
+                spu.ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT;
                 DEB_PR("21");
             }
             break;
 
             case Comandi_pushr:
             {
-                if (StackComandi_push(&stk, spu.registers[spu.massiv_comand[spu.ip + PEREHOD_NA_AEGUMENT]]) > 0) assert(0);
+                if (StackComandi_push(&(spu.stk), spu.registers[spu.massiv_comand[spu.ip + PEREHOD_NA_AEGUMENT]]) > 0) assert(0);
 
-                spu.ip += PEREHOD_NA_FUNKCIU + PEREHOD_NA_AEGUMENT;
+                spu.ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT;
                 DEB_PR("22");
             }
             break;
@@ -274,7 +276,8 @@ int main(void)
 
     //fprintf(stderr, "%d\n", stk.array_data[0]);
 
-    StackDtor(&stk);
+    StackDtor(&(spu.stk)); // FIXME вызывать в spu dtor
+    SPUDtor(massiv_comand_bufer);
 
     return 0;
 }
