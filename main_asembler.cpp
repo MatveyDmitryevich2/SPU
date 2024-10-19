@@ -6,19 +6,33 @@
 #include <stdint.h>
 
 #include "asembler.h"
-#include "funkcii_globalnie.h"
+#include "globalniy_enum.h"
 #include "schitivanie_faila.h"
+
 
 int main(void)
 {
-    Asembler_t spu = {};
-    AsemblerCtor(&spu);
+    Asembler_t asem = {};
+    Oshibki_Asemblera asm_error = AsemblerCtor(&asem, NACHALNIY_FAIL, KONECNIY_FAIL);
 
-    Zapis_comand(&spu);
+    Zapis_comand_pervichnaia(&asem);
+    Zapis_comand_votorichnaia(&asem);
 
-    fwrite(spu.massiv_comand, sizeof(int64_t), (uint64_t)spu.cteracia_dla_massiv_comand, spu.komandi_v_chislah);
+    //fprintf(stderr, "---%s---%d---\n", asem.struct_metok->metka, asem.struct_metok->adres_stroki);
 
-    AsemblerDtor(&spu);
+    for (int i = 0; i < asem.nomer_komandi; i++)
+    {
+        //fprintf(stderr, "[%d]: %d\n", i, asem.massiv_comand[i]);
+        fprintf(stderr, "%d ", asem.massiv_comand[i]);
+    }
+
+    AsemblerDtor(&asem);
 
     return 0;
 }
+
+
+//1 0 21 0 22 0 22 0 5 7 22 0 1 1 2 21 0 22 0 1 10 17 0 13 первичная
+//1 0 21 0 22 0 22 0 5 7 22 0 1 1 2 21 0 22 0 1 10 17 23 13 вторичная
+
+//1 0 21 0 22 0 22 0 5 7 22 0 1 1 2 21 0 22 0 1 10 17 23 13

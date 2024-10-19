@@ -1,8 +1,6 @@
 #ifndef PROCESSOR_H
 #define PROCESSOR_H
 
-#include "stack.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,6 +9,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "stack.h"
+
 enum Oshibki_SPU
 {
     NET_OSHIBOK_SPU                                            = 0,
@@ -18,9 +18,9 @@ enum Oshibki_SPU
     UKAZTENEL_NA_MASSIV_SPU_POEHAL                             = 2,
 };
 
-const char IMA_FAILA[] = "Chislovie_komani.txt";
+const char IMA_CHITAEMOGO_FAILA[] = "Chislovie_komani.txt";
 const int KOLICHESTVO_REGISTROV = 4;
-const int PEREHOD_NA_KOMANDU = 1; 
+const int PEREHOD_NA_KOMANDU = 1;  
 const int PEREHOD_NA_AEGUMENT = 1;
 
 struct Processor_t
@@ -32,7 +32,7 @@ struct Processor_t
     int registers[KOLICHESTVO_REGISTROV];
 };
 
-int64_t* Chtenie_komand_is_faila(const char* IMA_FAILA);
+int64_t* Chtenie_komand_is_faila(const char* IMA_CHITAEMOGO_FAILA);
 enum Oshibki_SPU SPUConstrtor(Processor_t* spu, int64_t* massiv_comand_bufer);
 void SPUDtor(Processor_t* spu, int64_t* massiv_comand_bufer);
 enum Oshibki_SPU ExecuteSPU (Processor_t* spu);

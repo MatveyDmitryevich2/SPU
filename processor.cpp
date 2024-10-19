@@ -1,9 +1,3 @@
-#include "processor.h"
-#include "stack.h"
-#include "funkcii_globalnie.h"
-#include "schitivanie_faila.h"
-#include "utils.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,10 +6,16 @@
 #include <stdint.h>
 #include <math.h>
 
+#include "processor.h"
+#include "stack.h"
+#include "globalniy_enum.h"
+#include "schitivanie_faila.h"
+#include "utils.h"
+
 enum Oshibki_SPU SPUConstrtor(Processor_t* spu, int64_t* massiv_comand_bufer)
 {
-    if (massiv_comand_bufer == NULL) { assert(0); }
-    if (spu == NULL) { assert(0); }
+    assert(spu != NULL);
+    assert(massiv_comand_bufer != NULL);
 
     if (StackConstrtor(&spu->stk, 2) > 0) assert(0);
     spu->ip = 0;
@@ -27,18 +27,22 @@ enum Oshibki_SPU SPUConstrtor(Processor_t* spu, int64_t* massiv_comand_bufer)
 
 void SPUDtor(Processor_t* spu, int64_t* massiv_comand_bufer)
 {
-    if (spu == NULL) { assert(0); }
+    assert(spu != NULL);
+    assert(massiv_comand_bufer != NULL);
 
     StackDtor(&(spu->stk));
 
     free(massiv_comand_bufer);
+    massiv_comand_bufer = NULL;
+    
+    *spu = {};
 }
 
-int64_t* Chtenie_komand_is_faila(const char* ima_faila) 
+int64_t* Chtenie_komand_is_faila(const char* ima_chitaemogo_failaa) 
 {
-    if (ima_faila == NULL) { assert(0); }
+    assert(ima_chitaemogo_failaa != NULL);
 
-    FILE* komandi_v_chislah = fopen(ima_faila, "r");
+    FILE* komandi_v_chislah = fopen(ima_chitaemogo_failaa, "r");
     if (komandi_v_chislah == nullptr)
     {
         fprintf(stderr, "Файл не открылся, как и твоя головка члена");
@@ -53,9 +57,11 @@ int64_t* Chtenie_komand_is_faila(const char* ima_faila)
 
     return massiv_comand_bufer;
 }
-
+ // FIXME вынеси обработку одной команды в функцию, чтоб не весь свитч был внутри while
 enum Oshibki_SPU ExecuteSPU (Processor_t* spu)
 {
+    assert(spu != NULL);
+
     if (spu == NULL) { assert(0); }
 
     while (spu->vikluchatel_cikla == 0) 
@@ -117,6 +123,9 @@ enum Oshibki_SPU ExecuteSPU (Processor_t* spu)
             {
                 int64_t a = 0;
                 int64_t b = 0;
+
+                if(a == 0) { assert(0); }
+
                 if (StackComandi_pop(&(spu->stk), &a) > 0) assert(0);
                 if (StackComandi_pop(&(spu->stk), &b) > 0) assert(0);
 
@@ -132,7 +141,7 @@ enum Oshibki_SPU ExecuteSPU (Processor_t* spu)
                 int64_t a = 0;
                 if (StackComandi_pop(&(spu->stk), &a) > 0) assert(0);
 
-                printf("%ld\n", a);
+                printf("%ld\n", a); 
                 
                 spu->ip += PEREHOD_NA_KOMANDU;
                 DEB_PR("7");
@@ -153,6 +162,9 @@ enum Oshibki_SPU ExecuteSPU (Processor_t* spu)
             case Comandi_sqrt:
             {
                 int64_t a = 0;
+
+                if(a < 0) { assert(0); }
+
                 if (StackComandi_pop(&(spu->stk), &a) > 0) assert(0);
 
                 if (StackComandi_push(&(spu->stk), sqrt(a)) > 0) assert(0);
@@ -206,7 +218,7 @@ enum Oshibki_SPU ExecuteSPU (Processor_t* spu)
             }
             break;
 
-            case Comandi_ja:                       //ctrl + H
+            case Comandi_ja:
             {
                 int64_t a = 0;
                 int64_t b = 0;

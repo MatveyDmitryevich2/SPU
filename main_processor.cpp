@@ -8,13 +8,13 @@
 
 #include "stack.h"
 #include "processor.h"
-#include "funkcii_globalnie.h"
+#include "globalniy_enum.h"
 #include "schitivanie_faila.h"
 #include "utils.h"
 
 int main(void)
 {
-    int64_t* massiv_comand_bufer = Chtenie_komand_is_faila(IMA_FAILA);
+    int64_t* massiv_comand_bufer = Chtenie_komand_is_faila(IMA_CHITAEMOGO_FAILA);
 
     Processor_t spu = {};
     SPUConstrtor(&spu, massiv_comand_bufer); // FIXME обрабатывать через if и функцию обработки
