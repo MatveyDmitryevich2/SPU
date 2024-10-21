@@ -24,8 +24,6 @@ enum Comandi
     Comandi_je     = 18,
     Comandi_jne    = 19,
     Comandi_jmp    = 20,
-    Comandi_popr   = 21,
-    Comandi_pushr  = 22,
     Registri_ax     = 0,
     Registri_bx     = 1,
     Registri_cx     = 2,

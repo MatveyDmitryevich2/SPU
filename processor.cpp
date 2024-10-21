@@ -1,3 +1,5 @@
+#include "processor.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,7 +8,6 @@
 #include <stdint.h>
 #include <math.h>
 
-#include "processor.h"
 #include "stack.h"
 #include "globalniy_enum.h"
 #include "schitivanie_faila.h"
@@ -17,10 +18,11 @@ enum Oshibki_SPU SPUConstrtor(Processor_t* spu, int64_t* massiv_comand_bufer)
     assert(spu != NULL);
     assert(massiv_comand_bufer != NULL);
 
-    if (StackConstrtor(&spu->stk, 2) > 0) assert(0);
+    spu->massiv_comand = massiv_comand_bufer;      
     spu->ip = 0;
     spu->vikluchatel_cikla = false;
-    spu->massiv_comand = massiv_comand_bufer;
+    if (StackConstrtor(&spu->stk, 2) > 0) assert(0);
+    memset(spu->registers, 0, KOLICHESTVO_REGISTROV);
 
     return NET_OSHIBOK_SPU;
 }
@@ -35,7 +37,7 @@ void SPUDtor(Processor_t* spu, int64_t* massiv_comand_bufer)
     free(massiv_comand_bufer);
     massiv_comand_bufer = NULL;
     
-    *spu = {};
+    memset(spu, 0, sizeof(spu));
 }
 
 int64_t* Chtenie_komand_is_faila(const char* ima_chitaemogo_failaa) 
@@ -57,275 +59,402 @@ int64_t* Chtenie_komand_is_faila(const char* ima_chitaemogo_failaa)
 
     return massiv_comand_bufer;
 }
- // FIXME вынеси обработку одной команды в функцию, чтоб не весь свитч был внутри while
+
 enum Oshibki_SPU ExecuteSPU (Processor_t* spu)
 {
     assert(spu != NULL);
 
-    if (spu == NULL) { assert(0); }
-
-    while (spu->vikluchatel_cikla == 0) 
+    while (!spu->vikluchatel_cikla)
     {
-        switch (spu->massiv_comand[spu->ip])
-        {
-            case Comandi_push:
-            {
-                if (StackComandi_push(&(spu->stk), (int)spu->massiv_comand[spu->ip + PEREHOD_NA_AEGUMENT]) > 0) { assert(0); }
-                
-                spu->ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT;
-                DEB_PR("1");
-            }
-            break;
-        
-            case Comandi_add: 
-            {
-                int64_t a = 0;
-                int64_t b = 0;
-                if (StackComandi_pop(&(spu->stk), &a) > 0) assert(0);
-                if (StackComandi_pop(&(spu->stk), &b) > 0) assert(0);
-
-                if (StackComandi_push(&(spu->stk), b + a) > 0) assert(0);
-                
-                spu->ip += PEREHOD_NA_KOMANDU;
-                DEB_PR("2");
-            }
-            break;
-
-            case Comandi_sub:
-            {
-                int64_t a = 0;
-                int64_t b = 0;
-                if (StackComandi_pop(&(spu->stk), &a) > 0) assert(0);
-                if (StackComandi_pop(&(spu->stk), &b) > 0) assert(0);
-
-                if (StackComandi_push(&(spu->stk), b - a) > 0) assert(0);
-                
-                spu->ip += PEREHOD_NA_KOMANDU;
-                DEB_PR("4");
-            }
-            break;
-
-            case Comandi_mul:
-            {
-                int64_t a = 0;
-                int64_t b = 0;
-                if (StackComandi_pop(&(spu->stk), &a) > 0) assert(0);
-                if (StackComandi_pop(&(spu->stk), &b) > 0) assert(0);
-
-                if (StackComandi_push(&(spu->stk), b * a) > 0) assert(0);
-                
-                spu->ip += PEREHOD_NA_KOMANDU;
-                DEB_PR("5");
-            }
-            break;
-
-            case Comandi_divv:
-            {
-                int64_t a = 0;
-                int64_t b = 0;
-
-                if(a == 0) { assert(0); }
-
-                if (StackComandi_pop(&(spu->stk), &a) > 0) assert(0);
-                if (StackComandi_pop(&(spu->stk), &b) > 0) assert(0);
-
-                if (StackComandi_push(&(spu->stk), b / a) > 0) assert(0);
-
-                spu->ip += PEREHOD_NA_KOMANDU;
-                DEB_PR("6");
-            }
-            break;
-
-            case Comandi_out:
-            {
-                int64_t a = 0;
-                if (StackComandi_pop(&(spu->stk), &a) > 0) assert(0);
-
-                printf("%ld\n", a); 
-                
-                spu->ip += PEREHOD_NA_KOMANDU;
-                DEB_PR("7");
-            }
-            break;
-
-            case Comandi_in:
-            {
-                int64_t a = 0;
-                scanf("%ld", &a);
-                if (StackComandi_push(&(spu->stk), (int)spu->massiv_comand[a]) > 0) assert(0);
-
-                spu->ip += PEREHOD_NA_KOMANDU;
-                DEB_PR("8");
-            }
-            break;
-
-            case Comandi_sqrt:
-            {
-                int64_t a = 0;
-
-                if(a < 0) { assert(0); }
-
-                if (StackComandi_pop(&(spu->stk), &a) > 0) assert(0);
-
-                if (StackComandi_push(&(spu->stk), sqrt(a)) > 0) assert(0);
-                
-                spu->ip += PEREHOD_NA_KOMANDU;
-                DEB_PR("9");
-            }
-            break;
-                
-            case Comandi_sin:
-            {
-                int64_t a = 0;
-                if (StackComandi_pop(&(spu->stk), &a) > 0) assert(0);
-
-                if (StackComandi_push(&(spu->stk), sin(a)) > 0) assert(0);
-                
-                spu->ip += PEREHOD_NA_KOMANDU;
-                DEB_PR("10");
-            }
-            break;
-
-            case Comandi_cos:
-            {
-                int64_t a = 0;
-                if (StackComandi_pop(&(spu->stk), &a) > 0) assert(0);
-
-                if (StackComandi_push(&(spu->stk), cos(a)) > 0) assert(0);
-                
-                spu->ip += PEREHOD_NA_KOMANDU;
-                DEB_PR("11");
-            }
-            break;
-
-            case Comandi_dump:
-            {
-                for (long long i = (long long)spu->stk.vacant_place - 1; i >= 0; i--)
-                {
-                    fprintf(stderr, "   [%lld] = ", i);
-                    fprintf(stderr, "%lu\n", (long unsigned)spu->stk.array_data[i]);
-                }
-
-                spu->ip += PEREHOD_NA_KOMANDU;
-                DEB_PR("12");
-            }
-            break;
-
-            case Comandi_hlt:
-            {
-                DEB_PR("13");
-                spu->vikluchatel_cikla = PEREHOD_NA_KOMANDU;
-            }
-            break;
-
-            case Comandi_ja:
-            {
-                int64_t a = 0;
-                int64_t b = 0;
-                if (StackComandi_pop(&(spu->stk), &a) > 0) assert(0);
-                if (StackComandi_pop(&(spu->stk), &b) > 0) assert(0);
-                
-                if (b > a) { spu->ip = spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
-                else { spu->ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
-                DEB_PR("14");
-            }
-            break;
-
-            case Comandi_jae:
-            {
-                int64_t a = 0;
-                int64_t b = 0;
-                if (StackComandi_pop(&(spu->stk), &a) > 0) assert(0);
-                if (StackComandi_pop(&(spu->stk), &b) > 0) assert(0);
-
-                if (b >= a) { spu->ip = spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
-                else { spu->ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
-                DEB_PR("15");
-            }
-            break;
-
-            case Comandi_jb:
-            {
-                int64_t a = 0;
-                int64_t b = 0;
-                if (StackComandi_pop(&(spu->stk), &a) > 0) assert(0);
-                if (StackComandi_pop(&(spu->stk), &b) > 0) assert(0);
-
-                if (b < a) { spu->ip = spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
-                else { spu->ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
-            DEB_PR("16");
-            }
-            break;
-
-            case Comandi_jbe:
-            {
-                int64_t a = 0;
-                int64_t b = 0;
-                if (StackComandi_pop(&(spu->stk), &a) > 0) assert(0);
-                if (StackComandi_pop(&(spu->stk), &b) > 0) assert(0);
-
-                if (b <= a) { spu->ip = spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
-                else { spu->ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
-                DEB_PR("17");
-            }
-            break;
-
-            case Comandi_je:
-            {
-                int64_t a = 0;
-                int64_t b = 0;
-                if (StackComandi_pop(&(spu->stk), &a) > 0) assert(0);
-                if (StackComandi_pop(&(spu->stk), &b) > 0) assert(0);
-
-                if (b == a) { spu->ip = spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
-                else { spu->ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
-                DEB_PR("18");
-            }
-            break;
-
-            case Comandi_jne:
-            {
-                int64_t a = 0;
-                int64_t b = 0;
-                if (StackComandi_pop(&(spu->stk), &a) > 0) assert(0);
-                if (StackComandi_pop(&(spu->stk), &b) > 0) assert(0);
-
-                if(b != a) { spu->ip = spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
-                else { spu->ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
-                DEB_PR("19");
-            }
-            break;
-
-            case Comandi_jmp:
-            {
-                spu->ip = spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU];
-                DEB_PR("20");
-            }
-            break;
-
-            case Comandi_popr:
-            {
-                int64_t a = 0;
-                if (StackComandi_pop(&(spu->stk), &a) > 0) assert(0);
-
-                spu->registers[spu->massiv_comand[spu->ip + PEREHOD_NA_AEGUMENT]] = (int)a;
-                spu->ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT;
-                DEB_PR("21");
-            }
-            break;
-
-            case Comandi_pushr:
-            {
-                if (StackComandi_push(&(spu->stk), spu->registers[spu->massiv_comand[spu->ip + PEREHOD_NA_AEGUMENT]]) > 0) assert(0);
-
-                spu->ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT;
-                DEB_PR("22");
-            }
-            break;
-
-            default: { assert(0); }
-        }
+        Decode(spu);
     }
 
     return NET_OSHIBOK_SPU;
+}
+
+int64_t Fetch(Processor_t* spu) { return spu->massiv_comand[spu->ip]; }
+
+void Decode(Processor_t* spu)
+{
+    switch (Fetch(spu))
+    {
+        case Comandi_push:
+        {
+            PushSPU(spu);
+        }
+        break;
+
+        case Comandi_add: 
+        {
+            AddSPU(spu);
+        }
+        break;
+
+        case Comandi_sub:
+        {
+            SubSPU(spu);
+        }
+        break;
+
+        case Comandi_mul:
+        {
+            MulSPU(spu);
+        }
+        break;
+
+        case Comandi_divv:
+        {
+            DivvSPU(spu);
+        }
+        break;
+
+        case Comandi_out:
+        {
+            OutSPU(spu);
+        }
+        break;
+
+        case Comandi_in:
+        {
+            InSPU(spu);
+        }
+        break;
+
+        case Comandi_sqrt:
+        {
+            SqrtSPU(spu);
+        }
+        break;
+            
+        case Comandi_sin:
+        {
+            SinSPU(spu);
+        }
+        break;
+
+        case Comandi_cos:
+        {
+            CosSPU(spu);
+        }
+        break;
+
+        case Comandi_dump:
+        {
+            DumpSPU(spu);
+        }
+        break;
+
+        case Comandi_hlt:
+        {
+            HltSPU(spu);
+        }
+        break;
+
+        case Comandi_ja:
+        {
+            JaSPU(spu);
+        }
+        break;
+
+        case Comandi_jae:
+        {
+            JaeSPU(spu); 
+        }
+        break;
+
+        case Comandi_jb:
+        {
+            JbSPU(spu);
+        }
+        break;
+
+        case Comandi_jbe:
+        {
+            JbeSPU(spu);
+        }
+        break;
+
+        case Comandi_je:
+        {
+            JeSPU(spu);
+        }
+        break;
+
+        case Comandi_jne:
+        {
+            JneSPU(spu);
+        }
+        break;
+
+        case Comandi_jmp:
+        {
+            JmpSPU(spu);
+        }
+        break;
+
+        case Comandi_pop:
+        {
+            PopSPU(spu);
+        }
+        break;
+
+        default: { assert(0); }
+    }
+}
+
+void PushSPU(Processor_t* spu)
+{
+    int komanda = Fetch(spu); spu->ip++;
+    int type = Fetch(spu); spu->ip++;
+    int64_t resultat = 0;
+
+    if (type & SMOTR_PERVIY_BIT) { resultat = Fetch(spu); spu->ip++; }
+    if (type & SMOTR_VTOROY_BIT) { resultat += spu->registers[Fetch(spu)]; spu->ip++; }
+    if (type & SMOTR_TRETIY_BIT) { resultat = spu->ram[resultat]; spu->ip++; }
+
+    if (StackPush(&(spu->stk), resultat) > 0) assert(0);
+
+    DEB_PR("1\n");
+}
+
+void AddSPU(Processor_t* spu)
+{
+    int64_t a = 0;
+    int64_t b = 0;
+    if (StackPop(&(spu->stk), &a) > 0) assert(0);
+    if (StackPop(&(spu->stk), &b) > 0) assert(0);
+
+    if (StackPush(&(spu->stk), b + a) > 0) assert(0);
+    
+    spu->ip += PEREHOD_NA_KOMANDU;
+
+    DEB_PR("2\n");
+}
+
+void SubSPU(Processor_t* spu)
+{
+    int64_t a = 0;
+    int64_t b = 0;
+    if (StackPop(&(spu->stk), &a) > 0) assert(0);
+    if (StackPop(&(spu->stk), &b) > 0) assert(0);
+
+    if (StackPush(&(spu->stk), b - a) > 0) assert(0);
+    
+    spu->ip += PEREHOD_NA_KOMANDU;
+    DEB_PR("4\n");
+}
+
+void MulSPU(Processor_t* spu)
+{
+    int64_t a = 0;
+    int64_t b = 0;
+    if (StackPop(&(spu->stk), &a) > 0) assert(0);
+    if (StackPop(&(spu->stk), &b) > 0) assert(0);
+
+    if (StackPush(&(spu->stk), b * a) > 0) assert(0);
+    
+    spu->ip += PEREHOD_NA_KOMANDU;
+    DEB_PR("5\n");
+}
+
+void DivvSPU(Processor_t* spu)
+{
+    int64_t a = 0;
+    int64_t b = 0;
+
+    if(a == 0) { assert(0); }
+
+    if (StackPop(&(spu->stk), &a) > 0) assert(0);
+    if (StackPop(&(spu->stk), &b) > 0) assert(0);
+
+    if (StackPush(&(spu->stk), b / a) > 0) assert(0);
+
+    spu->ip += PEREHOD_NA_KOMANDU;
+    DEB_PR("6\n");
+}
+
+void OutSPU(Processor_t* spu)
+{
+    int64_t a = 0;
+    if (StackPop(&(spu->stk), &a) > 0) assert(0);
+
+    printf("%ld\n", a); 
+    
+    spu->ip += PEREHOD_NA_KOMANDU;
+    DEB_PR("7\n");
+}
+
+void InSPU(Processor_t* spu)
+{
+    int64_t a = 0;
+    scanf("%ld", &a);
+    if (StackPush(&(spu->stk), (int)spu->massiv_comand[a]) > 0) assert(0);
+
+    spu->ip += PEREHOD_NA_KOMANDU;
+    DEB_PR("8\n");
+}
+
+void SqrtSPU(Processor_t* spu)
+{
+    int64_t a = 0;
+
+    if(a < 0) { assert(0); }
+
+    if (StackPop(&(spu->stk), &a) > 0) assert(0);
+
+    if (StackPush(&(spu->stk), sqrt(a)) > 0) assert(0);
+    
+    spu->ip += PEREHOD_NA_KOMANDU;
+    DEB_PR("9\n");
+}
+
+void SinSPU(Processor_t* spu)
+{
+    int64_t a = 0;
+    if (StackPop(&(spu->stk), &a) > 0) assert(0);
+
+    if (StackPush(&(spu->stk), sin(a)) > 0) assert(0);
+    
+    spu->ip += PEREHOD_NA_KOMANDU;
+    DEB_PR("10\n");
+}
+
+void CosSPU(Processor_t* spu)
+{
+    int64_t a = 0;
+    if (StackPop(&(spu->stk), &a) > 0) assert(0);
+
+    if (StackPush(&(spu->stk), cos(a)) > 0) assert(0);
+    
+    spu->ip += PEREHOD_NA_KOMANDU;
+    DEB_PR("11\n");
+}
+
+void DumpSPU(Processor_t* spu)
+{
+    for (long long i = (long long)spu->stk.vacant_place - 1; i >= 0; i--)
+    {
+        fprintf(stderr, "   [%lld] = ", i);
+        fprintf(stderr, "%lu\n", (long unsigned)spu->stk.array_data[i]);
+    }
+
+    spu->ip += PEREHOD_NA_KOMANDU;
+    DEB_PR("12\n");
+}
+
+void HltSPU(Processor_t* spu)
+{
+    DEB_PR("13\n");
+    spu->vikluchatel_cikla = PEREHOD_NA_KOMANDU;
+}
+
+void JaSPU(Processor_t* spu)
+{
+    int64_t a = 0;
+    int64_t b = 0;
+    if (StackPop(&(spu->stk), &a) > 0) assert(0);
+    if (StackPop(&(spu->stk), &b) > 0) assert(0);
+    
+    if (b > a) { spu->ip = spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
+    else { spu->ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
+    DEB_PR("14\n");
+}
+
+void JaeSPU(Processor_t* spu)
+{
+    int64_t a = 0;
+    int64_t b = 0;
+    if (StackPop(&(spu->stk), &a) > 0) assert(0);
+    if (StackPop(&(spu->stk), &b) > 0) assert(0);
+
+    if (b >= a) { spu->ip = spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
+    else { spu->ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
+    DEB_PR("15\n");
+}
+
+void JbSPU(Processor_t* spu)
+{
+    int64_t a = 0;
+    int64_t b = 0;
+    if (StackPop(&(spu->stk), &a) > 0) assert(0);
+    if (StackPop(&(spu->stk), &b) > 0) assert(0);
+
+    if (b < a) { spu->ip = spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
+    else { spu->ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
+    DEB_PR("16\n");
+}
+
+void JbeSPU(Processor_t* spu)
+{
+    int64_t a = 0;
+    int64_t b = 0;
+    if (StackPop(&(spu->stk), &a) > 0) assert(0);
+    if (StackPop(&(spu->stk), &b) > 0) assert(0);
+
+    if (b <= a) { spu->ip = spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
+    else { spu->ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
+    DEB_PR("17\n");
+}
+
+void JeSPU(Processor_t* spu)
+{
+    int64_t a = 0;
+    int64_t b = 0;
+    if (StackPop(&(spu->stk), &a) > 0) assert(0);
+    if (StackPop(&(spu->stk), &b) > 0) assert(0);
+
+    if (b == a) { spu->ip = spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
+    else { spu->ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
+    DEB_PR("18\n");
+}
+
+void JneSPU(Processor_t* spu)
+{
+    int64_t a = 0;
+    int64_t b = 0;
+    if (StackPop(&(spu->stk), &a) > 0) assert(0);
+    if (StackPop(&(spu->stk), &b) > 0) assert(0);
+
+    if(b != a) { spu->ip = spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
+    else { spu->ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
+    DEB_PR("19\n");
+}
+
+void JmpSPU(Processor_t* spu)
+{
+    spu->ip = spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU];
+    DEB_PR("20\n");
+}
+
+void PopSPU(Processor_t* spu)
+{
+    int komanda = Fetch(spu); spu->ip++;
+    int type = Fetch(spu); spu->ip++;
+    int resultat = 0;
+
+    int64_t a = 0;
+    if (StackPop(&(spu->stk), &a) > 0) assert(0); 
+    
+    if (type & SMOTR_CHETVERTIY_BIT)
+    {
+        spu->registers[Fetch(spu)] = a;
+        spu->ip++; 
+    }
+    else
+    {
+        if (type & SMOTR_PERVIY_BIT)
+        { 
+            resultat = Fetch(spu);
+            spu->ip++;
+        }
+        if (type & SMOTR_VTOROY_BIT)
+        { 
+            resultat += spu->registers[Fetch(spu)];
+            spu->ip++; 
+        }
+
+        spu->ram[resultat] = a;
+    }
+
+    DEB_PR("3\n");
 }

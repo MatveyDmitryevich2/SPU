@@ -1,6 +1,4 @@
 #include "asembler.h"
-#include "globalniy_enum.h"
-#include "schitivanie_faila.h"
 
 #include <stdio.h>
 #include <stdlib.h> 
@@ -9,45 +7,65 @@
 #include <assert.h>
 #include <stdint.h>
 
-enum Oshibki_Asemblera AsemblerCtor(Asembler_t* const asem, const char* asm_file_name, const char* bin_file_name)
+#include "globalniy_enum.h"
+#include "schitivanie_faila.h"
+
+void Otkritie_asm (Asembler_t* const asem, const char* asm_file_name)
 {
     assert(asem != NULL);
     assert(asm_file_name != NULL);
-    assert(bin_file_name != NULL);
 
-    asem->komandi = fopen(asm_file_name, "r");
-    asem->komandi_v_chislah = fopen(bin_file_name, "w + b"); // FIXME открывать в внешней функции записи его, до этого момента он не нужен
-    if ((asem->komandi == nullptr) || (asem->komandi_v_chislah == nullptr))
+    FILE* komandi = fopen(asm_file_name, "r");
+    if (komandi == nullptr)
     {
         fprintf(stderr, "Файл не открылся, как и твоя головка члена");
-        return OSHINKA_PRI_OTKRITII_FAILA;
+        assert(0);
     }
 
-    asem->razmer_faila = Chitaet_razmer_faila(asem->komandi);
-    asem->buffer = (char*)calloc(asem->razmer_faila, sizeof(char));
-    fread(asem->buffer, sizeof(char), asem->razmer_faila, asem->komandi);
+    asem->razmer_faila = Chitaet_razmer_faila(komandi);
+    asem->buffer = (char*)calloc(asem->razmer_faila + 1, sizeof(char));
+    fread(asem->buffer, sizeof(char), asem->razmer_faila, komandi);
+    fclose(komandi);
+    komandi = NULL;
+}
 
-    // FIXME делать дефолтный размер, потом реалоцировать
-    asem->massiv_comand = (int64_t*)calloc(asem->razmer_faila + 1, sizeof(int64_t));
-    //fprintf(stderr, "\n%lu\n", asem->razmer_faila);
-    //fprintf(stderr, "%s\n", asem->buffer);
-    asem->struct_metok = (Metki_t*)calloc(MAX_COLICHESTVO_METOK, sizeof(Metki_t));
+void Otkritie_bin (Asembler_t* const asem, const char* bin_file_name)
+{
+    assert(asem != NULL);
+    assert(bin_file_name != NULL);
 
-    for (int i = 0; i < MAX_COLICHESTVO_METOK; i++)
+    FILE* komandi_v_chislah = fopen(bin_file_name, "w + b");
+    if (komandi_v_chislah == nullptr)
     {
-        asem->struct_metok[i].adres_stroki = -1; // FIXME вынести счётчик
+        fprintf(stderr, "Файл не открылся, как и твоя головка члена");
+        assert(0);
     }
 
-    fclose (asem->komandi);
+    fwrite(asem->massiv_comand, sizeof(int64_t), (uint64_t)asem->kolichestvo_komand, komandi_v_chislah);
+    fclose(komandi_v_chislah);
+    komandi_v_chislah = NULL;
+}
+
+enum Oshibki_Asemblera AsemblerCtor(Asembler_t* const asem, const char* asm_file_name)
+{
+    assert(asem != NULL);
+    assert(asm_file_name != NULL);
+
+    Otkritie_asm (asem, asm_file_name);
+    // FIXME делать дефолтный размер, потом реалоцировать
+    asem->massiv_comand = (int64_t*)calloc(asem->razmer_faila, sizeof(int64_t));
+    asem->struct_metok = (Metki_t*)calloc(MAX_COLICHESTVO_METOK, sizeof(Metki_t));
+    asem->metka_na_metki = true;
+
     return NET_OSHIBOK;
 }
 
-void AsemblerDtor(Asembler_t* const asem)
+void AsemblerDtor(Asembler_t* const asem, const char* bin_file_name)
 {
     assert(asem != NULL);
+    assert(bin_file_name != NULL);
 
-    fwrite(asem->massiv_comand, sizeof(int64_t), (uint64_t)asem->nomer_komandi, asem->komandi_v_chislah);
-    fclose (asem->komandi_v_chislah); // FIXME закрывать так рано как можешь(в этом случае в конструкторе) СДЕЛАЛ
+    Otkritie_bin (asem, bin_file_name);
 
     free(asem->buffer);
     asem->buffer = NULL;
@@ -56,116 +74,157 @@ void AsemblerDtor(Asembler_t* const asem)
     asem->massiv_comand = NULL;
 }
 
-enum Oshibki_Asemblera Zapis_comand_pervichnaia(Asembler_t* const asem)
+enum Oshibki_Asemblera Zapis_comand(Asembler_t* const asem)
 {
     assert(asem != NULL);
 
     char komanda[RAZMER_COMANDI] = {};
+    char type[RAZMER_COMANDI] = {};
     char argument[RAZMER_ARGUMENTA] = {};
-    char bufer_stroki[RAZMER_ARGUMENTA + RAZMER_ARGUMENTA] = {};
+    char argument_2[RAZMER_ARGUMENTA] = {};
+    char bufer_stroki[RAZMER_COMANDI * 2 + RAZMER_ARGUMENTA * 2] = {};
 
-    for (char* posicia_v_buffere = asem->buffer; posicia_v_buffere < asem->buffer + asem->razmer_faila; posicia_v_buffere = strchr(posicia_v_buffere, '\n') + 1)
+    for (char* posicia_v_buffere = asem->buffer;
+         posicia_v_buffere < asem->buffer + asem->razmer_faila;
+         posicia_v_buffere = strchr(posicia_v_buffere, '\n') + 1)
     {
         memcpy(bufer_stroki, posicia_v_buffere, strchr(posicia_v_buffere, '\n') - posicia_v_buffere);
-
-        int kolichaestvo_slov_v_stroke = sscanf(bufer_stroki, "%s %s", komanda, argument);
-        //fprintf(stderr, "--%d--\n", kolichaestvo_slov_v_stroke);
+        
+        sscanf(bufer_stroki, "%s", komanda); 
         enum Comandi opredelitel_metki_komanda = Perevod_asembler(komanda);
-        enum Comandi opredelitel_metki_argument = Perevod_asembler(argument);
 
-        if (kolichaestvo_slov_v_stroke == 1)
+        if ((opredelitel_metki_komanda != Comandi_push) && (opredelitel_metki_komanda != Comandi_pop))
         {
-            if (opredelitel_metki_komanda < 0) { Ishet_metku(asem, komanda); }
-            // FIXME ++ сделать отдельно
-            else { asem->massiv_comand[asem->nomer_komandi++] = opredelitel_metki_komanda; }
-        }
+            int kolichaestvo_slov_v_stroke = sscanf(bufer_stroki, "%s %s", komanda, argument);
+            //fprintf(stderr, "--%d--\n", kolichaestvo_slov_v_stroke);
+            enum Comandi opredelitel_metki_argument = Perevod_asembler(argument);
 
-        if (kolichaestvo_slov_v_stroke == 2)
-        {
-            asem->massiv_comand[asem->nomer_komandi++] = opredelitel_metki_komanda;
-            if (opredelitel_metki_argument < 0) 
+            if (kolichaestvo_slov_v_stroke == 1)
             {
-                asem->massiv_comand[asem->nomer_komandi++]
-                    = Ishet_metku_dla_jumpa(asem, argument, opredelitel_metki_komanda, opredelitel_metki_argument);
+                if (opredelitel_metki_komanda < 0) 
+                { 
+                    if (asem->metka_na_metki) { Ishet_metku(asem, komanda); }
+                }
+                else { asem->massiv_comand[asem->kolichestvo_komand++] = opredelitel_metki_komanda; }
             }
-            else { asem->massiv_comand[asem->nomer_komandi++] = opredelitel_metki_argument; }
-        }
 
-        memset(bufer_stroki, 0, RAZMER_ARGUMENTA + RAZMER_ARGUMENTA);
-    }
-
-    return NET_OSHIBOK;
-}
-
-// FIXME ставь const везде где можно
-enum Oshibki_Asemblera Zapis_comand_votorichnaia(Asembler_t* const asem)
-{
-    assert(asem != NULL);
-
-    char komanda[RAZMER_COMANDI] = {};
-    char argument[RAZMER_ARGUMENTA] = {};
-    char bufer_stroki[RAZMER_ARGUMENTA + RAZMER_ARGUMENTA] = {};
-
-    int64_t bufer_razmera_masiva_kamand = asem->nomer_komandi;
-    fprintf(stderr, "--%d--\n", asem->nomer_komandi);
-    asem->nomer_komandi = 0;
-
-    for (char* posicia_v_buffere = asem->buffer; posicia_v_buffere < asem->buffer + asem->razmer_faila; posicia_v_buffere = strchr(posicia_v_buffere, '\n') + 1)
-    {
-        memset(bufer_stroki, 0, RAZMER_ARGUMENTA + RAZMER_ARGUMENTA);
-        memcpy(bufer_stroki, posicia_v_buffere, strchr(posicia_v_buffere, '\n') - posicia_v_buffere);
-
-        int kolichaestvo_slov_v_stroke = sscanf(bufer_stroki, "%s %s", komanda, argument);
-
-        enum Comandi opredelitel_metki_komanda = Perevod_asembler(komanda);
-        enum Comandi opredelitel_metki_argument = Perevod_asembler(argument);
-
-        if (kolichaestvo_slov_v_stroke == 1) 
-        {
-            if (opredelitel_metki_komanda < 0) {}
-            else { asem->nomer_komandi++; }
-
-            continue;
-        }
-        if (kolichaestvo_slov_v_stroke < 1) {
-            assert(0 && "kolichaestvo_slov_v_stroke < 1");
-            continue;
-        } 
-
-        asem->nomer_komandi++;
-
-        if (opredelitel_metki_argument < 0) //метка или число
-        {          
-            if (isdigit(argument[0]) == 0)  //метка
+            if (kolichaestvo_slov_v_stroke == 2)
             {
-                for (int i = 0; i < MAX_COLICHESTVO_METOK; i++)
+                asem->massiv_comand[asem->kolichestvo_komand++] = opredelitel_metki_komanda;
+                if (opredelitel_metki_argument < 0) 
                 {
-                    if (strcmp(asem->struct_metok[i].metka, argument) == 0)
-                    {
-                        //fprintf(stderr, "--%d--\n", asem->massiv_comand[asem->nomer_komandi]);
-                        //fprintf(stderr, "asem->nomer_komandi: %ld\n", asem->nomer_komandi);
-                        //fprintf(stderr, "asem->struct_metok[i].adres_stroki: %ld\n",  asem->struct_metok[i].adres_stroki);
+                    asem->massiv_comand[asem->kolichestvo_komand++]
+                        = Ishet_metku_dla_jumpa(asem, argument, opredelitel_metki_komanda, opredelitel_metki_argument);
+                }
+                else { asem->massiv_comand[asem->kolichestvo_komand++] = opredelitel_metki_argument; }
+            }
+        }
+        if (opredelitel_metki_komanda == Comandi_push)
+        {
+            if (strchr(bufer_stroki, '[') == NULL) 
+            {
+                int kolichaestvo_slov_v_stroke = sscanf(bufer_stroki, "%s %s + %s", komanda, argument, argument_2);
 
-                        asem->massiv_comand[asem->nomer_komandi] = asem->struct_metok[i].adres_stroki;
-                        asem->nomer_komandi++;
-                        //fprintf(stderr, "asem->nomer_komandi: %ld\n", asem->nomer_komandi);
-                        //fprintf(stderr, "--%d--\n", asem->massiv_comand[asem->nomer_komandi - 1]);
+                if (kolichaestvo_slov_v_stroke == 2)
+                {
+                    asem->massiv_comand[asem->kolichestvo_komand++] = Perevod_asembler(komanda);
+
+                    if (Perevod_asembler(argument) < 0) 
+                    { 
+                        asem->massiv_comand[asem->kolichestvo_komand++] = PERVIY_BIT;
+                        asem->massiv_comand[asem->kolichestvo_komand++] = (enum Comandi)strtol(argument, NULL, 10);
+                    }
+                    else 
+                    { 
+                        asem->massiv_comand[asem->kolichestvo_komand++] = VTOROY_BIT;
+                        asem->massiv_comand[asem->kolichestvo_komand++] = Perevod_asembler(argument);
+                    }
+                }
+                if (kolichaestvo_slov_v_stroke == 3)
+                {
+                    asem->massiv_comand[asem->kolichestvo_komand++] = Perevod_asembler(komanda);
+                    asem->massiv_comand[asem->kolichestvo_komand++] = PERVIY_BIT + VTOROY_BIT;
+                    asem->massiv_comand[asem->kolichestvo_komand++] = (enum Comandi)strtol(argument, NULL, 10);
+                    asem->massiv_comand[asem->kolichestvo_komand++] = Perevod_asembler(argument_2);
+                }
+
+            }
+            else
+            {
+                int kolichaestvo_slov_v_stroke = sscanf(strchr(bufer_stroki, '[') + 1, "%s + %s", argument, argument_2);
+                asem->massiv_comand[asem->kolichestvo_komand++] = Perevod_asembler(komanda);
+
+                if (kolichaestvo_slov_v_stroke == 1)
+                {
+                    if (Perevod_asembler(argument) < 0)
+                    {
+                        asem->massiv_comand[asem->kolichestvo_komand++] = PERVIY_BIT + TRETIY_BIT;
+                        asem->massiv_comand[asem->kolichestvo_komand++] = (enum Comandi)strtol(argument, NULL, 10);
+                    }
+                    else
+                    {
+                        asem->massiv_comand[asem->kolichestvo_komand++] = VTOROY_BIT + TRETIY_BIT;
+                        asem->massiv_comand[asem->kolichestvo_komand++] = Perevod_asembler(argument);
+                    }
+                }
+                if (kolichaestvo_slov_v_stroke == 2)
+                {
+                    asem->massiv_comand[asem->kolichestvo_komand++] = PERVIY_BIT + VTOROY_BIT + TRETIY_BIT;
+                    asem->massiv_comand[asem->kolichestvo_komand++] = (enum Comandi)strtol(argument, NULL, 10);
+                    asem->massiv_comand[asem->kolichestvo_komand++] = Perevod_asembler(argument_2);
+                }
+            }
+        }
+        if (opredelitel_metki_komanda == Comandi_pop)
+        {
+            if (strchr(bufer_stroki, '[') == NULL)
+            {
+                sscanf(bufer_stroki, "%s %s", komanda, argument);
+                asem->massiv_comand[asem->kolichestvo_komand++] = Perevod_asembler(komanda);
+                asem->massiv_comand[asem->kolichestvo_komand++] = CHETVERTIY_BIT;
+                asem->massiv_comand[asem->kolichestvo_komand++] = Perevod_asembler(argument);
+            }
+            else
+            {
+                int kolichaestvo_slov_v_stroke = sscanf(strchr(bufer_stroki, '[') + 1, "%s + %s", argument, argument_2);
+                asem->massiv_comand[asem->kolichestvo_komand++] = Perevod_asembler(komanda);
+                
+                if (kolichaestvo_slov_v_stroke == 2)
+                {
+                    asem->massiv_comand[asem->kolichestvo_komand++] = VTOROY_BIT + PERVIY_BIT;
+                    asem->massiv_comand[asem->kolichestvo_komand++] = (enum Comandi)strtol(argument, NULL, 10);
+                    asem->massiv_comand[asem->kolichestvo_komand++] = Perevod_asembler(argument_2);
+                }
+                if (kolichaestvo_slov_v_stroke == 1)
+                {
+                    if (Perevod_asembler(argument) < 0)
+                    {
+                        asem->massiv_comand[asem->kolichestvo_komand++] = PERVIY_BIT;
+                        asem->massiv_comand[asem->kolichestvo_komand++] = (enum Comandi)strtol(argument, NULL, 10);
+                    }
+                    else
+                    {
+                        asem->massiv_comand[asem->kolichestvo_komand++] = VTOROY_BIT;
+                        asem->massiv_comand[asem->kolichestvo_komand++] = Perevod_asembler(argument);
                     }
                 }
             }
-            else { asem->nomer_komandi++; }  //число
-
         }
-        else { asem->nomer_komandi++; }  //регистр
+
+        memset(bufer_stroki, 0, RAZMER_ARGUMENTA * 2 + RAZMER_ARGUMENTA * 2);
+        memset(komanda, 0, RAZMER_COMANDI);
+        memset(type, 0, RAZMER_COMANDI);
+        memset(argument, 0, RAZMER_ARGUMENTA);
+        memset(argument_2, 0, RAZMER_ARGUMENTA);
     }
-
-    fprintf(stderr, "--%d--\n", asem->nomer_komandi);
-    asem->nomer_komandi = bufer_razmera_masiva_kamand;
-
+    asem->metka_na_metki = false;
     return NET_OSHIBOK;
 }
-
-enum Comandi Ishet_metku_dla_jumpa(Asembler_t* asem, char* argument, enum Comandi komanda_komanda, enum Comandi komanda_argument)
+//FIXME const ставить
+enum Comandi Ishet_metku_dla_jumpa(Asembler_t* asem, 
+                                   char* argument, 
+                                   enum Comandi komanda_komanda, 
+                                   enum Comandi komanda_argument)
 {
     assert(asem != NULL);
     assert(argument != NULL);
@@ -174,7 +233,10 @@ enum Comandi Ishet_metku_dla_jumpa(Asembler_t* asem, char* argument, enum Comand
     {
         for (int i = 0; i < MAX_COLICHESTVO_METOK; i++)
         {
-            if (strcmp(asem->struct_metok[i].metka, argument) == 0) { return (enum Comandi)asem->struct_metok[i].adres_stroki; }
+            if (strcmp(asem->struct_metok[i].metka, argument) == 0)
+            {
+                return (enum Comandi)asem->struct_metok[i].adres_stroki;
+            }
         }
 
         return (enum Comandi)0;
@@ -188,16 +250,10 @@ void Ishet_metku(Asembler_t* asem, char* slovo)
     assert(asem != NULL);
     assert(slovo != NULL);
 
-    for(int i = 0; i < MAX_COLICHESTVO_METOK; i++)
-    {
-        if(asem->struct_metok[i].adres_stroki == -1)
-        {
-            strcpy(asem->struct_metok[i].metka, slovo); //записал метку в строку
-            asem->struct_metok[i].adres_stroki = asem->nomer_komandi; //записал адрес для цикла
-
-            break;
-        }
-    }
+    
+    strcpy(asem->struct_metok[asem->schetchik_metok].metka, slovo);
+    asem->struct_metok[asem->schetchik_metok].adres_stroki = asem->kolichestvo_komand;
+    asem->schetchik_metok++;
 }
 
 
@@ -224,8 +280,7 @@ enum Comandi Perevod_asembler(const char* bufer_cmd)
     else if (strncmp(bufer_cmd, Comandi_je1,    sizeof(Comandi_je1))     == 0)   { return Comandi_je;    }
     else if (strncmp(bufer_cmd, Comandi_jne1,   sizeof(Comandi_jne1))    == 0)   { return Comandi_jne;   }
     else if (strncmp(bufer_cmd, Comandi_jmp1,   sizeof(Comandi_jmp1))    == 0)   { return Comandi_jmp;   }
-    else if (strncmp(bufer_cmd, Comandi_popr1,  sizeof(Comandi_popr1))   == 0)   { return Comandi_popr;  }
-    else if (strncmp(bufer_cmd, Comandi_pushr1, sizeof(Comandi_pushr1))  == 0)   { return Comandi_pushr; }
+    else if (strncmp(bufer_cmd, Comandi_pop1,   sizeof(Comandi_pop1))    == 0)   { return Comandi_pop;   }
     // FIXME вынести чек регистров в отдельную функцию
     else if (strncmp(bufer_cmd, Registri_ax1,   sizeof(Registri_ax1))    == 0)   { return Registri_ax;   }
     else if (strncmp(bufer_cmd, Registri_bx1,   sizeof(Registri_bx1))    == 0)   { return Registri_bx;   }
@@ -234,51 +289,3 @@ enum Comandi Perevod_asembler(const char* bufer_cmd)
     else                                                                         { return Comandi_metka; } 
     // FIXME А если не правильная комманда а не метка
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// enum Oshibki_Asemblera Zapis_comand_pervichnaia(Asembler_t* asem)
-// {
-//     assert(asem != NULL);
-
-//     char komanda[RAZMER_COMANDI] = {};
-//     char argument[RAZMER_ARGUMENTA] = {};
-//     char bufer_stroki[RAZMER_ARGUMENTA + RAZMER_ARGUMENTA] = {};
-
-//     size_t slesh_n = 0;
-//     for(char* posicia_v_buffere = asem->buffer; posicia_v_buffere < asem->buffer + asem->razmer_faila; posicia_v_buffere = strchr(posicia_v_buffere, '\n') + 1)
-//     {
-//         int kolichaestvo_slov_v_stroke = sscanf(posicia_v_buffere, "%s %s", komanda, argument);
-//         fprintf(stderr, "--%d--\n", kolichaestvo_slov_v_stroke);
-//         if (kolichaestvo_slov_v_stroke == 1)
-//         {
-//             fprintf(stderr, "%s\n", komanda);
-//         }
-
-//         if (kolichaestvo_slov_v_stroke == 2)
-//         {
-//             fprintf(stderr, "%s %s\n", komanda, argument);
-//         }
-//     }
-
-//     return NET_OSHIBOK;
-// }

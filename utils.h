@@ -1,7 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-// #define DEBUG_FPRINTF
+//#define DEBUG_FPRINTF
 
 #ifdef DEBUG_FPRINTF
     #define DEB_PR(...) fprintf(stderr, __VA_ARGS__);

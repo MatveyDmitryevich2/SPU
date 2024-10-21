@@ -29,7 +29,7 @@ enum Oshibki_Stacka StackConstrtor(Stack_t* stk, size_t razmer)
     return StackError(stk);
 }
 
-enum Oshibki_Stacka StackComandi_push(Stack_t* stk, StackElem_t complement)
+enum Oshibki_Stacka StackPush(Stack_t* stk, StackElem_t complement)
 {
     enum Oshibki_Stacka oshibka1 = StackError(stk);
     if (oshibka1 != NET_OSHIBOK) { return oshibka1; }
@@ -51,7 +51,7 @@ enum Oshibki_Stacka StackComandi_push(Stack_t* stk, StackElem_t complement)
     return StackError(stk);
 }
 
-enum Oshibki_Stacka StackComandi_pop(Stack_t* stk, StackElem_t* last_recorded_value)
+enum Oshibki_Stacka StackPop(Stack_t* stk, StackElem_t* last_recorded_value)
 {
     enum Oshibki_Stacka oshibka = StackError(stk);
     if (oshibka != NET_OSHIBOK) { return oshibka; }

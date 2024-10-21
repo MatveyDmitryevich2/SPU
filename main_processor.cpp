@@ -17,7 +17,7 @@ int main(void)
     int64_t* massiv_comand_bufer = Chtenie_komand_is_faila(IMA_CHITAEMOGO_FAILA);
 
     Processor_t spu = {};
-    SPUConstrtor(&spu, massiv_comand_bufer); // FIXME обрабатывать через if и функцию обработки
+    SPUConstrtor(&spu, massiv_comand_bufer);
 
     ExecuteSPU (&spu);
     //fprintf(stderr, "%d\n", stk.array_data[0]);
