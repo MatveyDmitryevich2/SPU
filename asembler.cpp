@@ -52,7 +52,7 @@ enum Oshibki_Asemblera AsemblerCtor(Asembler_t* const asem, const char* asm_file
     assert(asm_file_name != NULL);
 
     Otkritie_asm (asem, asm_file_name);
-    // FIXME делать дефолтный размер, потом реалоцировать
+    // FIXME делать дефолтный размер, потом реалоцировать при каждой записи
     asem->massiv_comand = (int64_t*)calloc(asem->razmer_faila, sizeof(int64_t));
     asem->struct_metok = (Metki_t*)calloc(MAX_COLICHESTVO_METOK, sizeof(Metki_t));
     asem->metka_na_metki = true;

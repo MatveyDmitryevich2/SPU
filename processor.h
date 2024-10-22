@@ -40,7 +40,7 @@ struct Processor_t
     int64_t ip;
     bool vikluchatel_cikla;
     struct Stack_t stk;
-    int registers[KOLICHESTVO_REGISTROV];
+    int64_t registers[KOLICHESTVO_REGISTROV];
     int64_t ram[RAZMER_ram];
 };
 
@@ -51,7 +51,7 @@ enum Oshibki_SPU ExecuteSPU (Processor_t* spu);
 
 int64_t Fetch(Processor_t* spu);
 void Decode(Processor_t* spu);
-
+// FIXME читай что такое static функции
 void PushSPU(Processor_t* spu);
 void AddSPU(Processor_t* spu);
 void SubSPU(Processor_t* spu);

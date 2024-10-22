@@ -37,7 +37,7 @@ void SPUDtor(Processor_t* spu, int64_t* massiv_comand_bufer)
     free(massiv_comand_bufer);
     massiv_comand_bufer = NULL;
     
-    memset(spu, 0, sizeof(spu));
+    memset(spu, 0, (size_t)sizeof(spu));
 }
 
 int64_t* Chtenie_komand_is_faila(const char* ima_chitaemogo_failaa) 
@@ -72,7 +72,12 @@ enum Oshibki_SPU ExecuteSPU (Processor_t* spu)
     return NET_OSHIBOK_SPU;
 }
 
-int64_t Fetch(Processor_t* spu) { return spu->massiv_comand[spu->ip]; }
+int64_t Fetch(Processor_t* spu) //FIXME - FetchInstruction
+{
+    assert(spu != NULL);
+    
+    return spu->massiv_comand[spu->ip];
+} //FIXME - в строкку кейсы писатб и ассерт на спю
 
 void Decode(Processor_t* spu)
 {
@@ -204,15 +209,15 @@ void Decode(Processor_t* spu)
 
 void PushSPU(Processor_t* spu)
 {
-    int komanda = Fetch(spu); spu->ip++;
-    int type = Fetch(spu); spu->ip++;
-    int64_t resultat = 0;
+    spu->ip++;
+    int64_t type_pu = Fetch(spu); spu->ip++;
+    int64_t resultat_pu = 0;
 
-    if (type & SMOTR_PERVIY_BIT) { resultat = Fetch(spu); spu->ip++; }
-    if (type & SMOTR_VTOROY_BIT) { resultat += spu->registers[Fetch(spu)]; spu->ip++; }
-    if (type & SMOTR_TRETIY_BIT) { resultat = spu->ram[resultat]; spu->ip++; }
+    if (type_pu & SMOTR_PERVIY_BIT) { resultat_pu = Fetch(spu); spu->ip++; }
+    if (type_pu & SMOTR_VTOROY_BIT) { resultat_pu += spu->registers[Fetch(spu)]; spu->ip++; }
+    if (type_pu & SMOTR_TRETIY_BIT) { resultat_pu = spu->ram[resultat_pu]; spu->ip++; }
 
-    if (StackPush(&(spu->stk), resultat) > 0) assert(0);
+    if (StackPush(&(spu->stk), resultat_pu) > 0) assert(0);
 
     DEB_PR("1\n");
 }
@@ -428,32 +433,32 @@ void JmpSPU(Processor_t* spu)
 
 void PopSPU(Processor_t* spu)
 {
-    int komanda = Fetch(spu); spu->ip++;
-    int type = Fetch(spu); spu->ip++;
-    int resultat = 0;
+    spu->ip++;
+    int64_t type_po = Fetch(spu); spu->ip++;
+    int64_t resultat_po = 0;
 
     int64_t a = 0;
     if (StackPop(&(spu->stk), &a) > 0) assert(0); 
     
-    if (type & SMOTR_CHETVERTIY_BIT)
+    if (type_po & SMOTR_CHETVERTIY_BIT)
     {
         spu->registers[Fetch(spu)] = a;
         spu->ip++; 
     }
     else
     {
-        if (type & SMOTR_PERVIY_BIT)
+        if (type_po & SMOTR_PERVIY_BIT)
         { 
-            resultat = Fetch(spu);
+            resultat_po = Fetch(spu);
             spu->ip++;
         }
-        if (type & SMOTR_VTOROY_BIT)
+        if (type_po & SMOTR_VTOROY_BIT)
         { 
-            resultat += spu->registers[Fetch(spu)];
+            resultat_po += spu->registers[Fetch(spu)];
             spu->ip++; 
         }
 
-        spu->ram[resultat] = a;
+        spu->ram[resultat_po] = a;
     }
 
     DEB_PR("3\n");
