@@ -13,7 +13,7 @@
 int main(void)
 {
     Asembler_t asem = {};
-    Oshibki_Asemblera asm_error = AsemblerCtor(&asem, NACHALNIY_FAIL);
+    AsemblerCtor(&asem, NACHALNIY_FAIL);
 
     Zapis_comand(&asem);
     asem.kolichestvo_komand = 0;

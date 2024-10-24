@@ -13,6 +13,29 @@
 #include "schitivanie_faila.h"
 #include "utils.h"
 
+static int64_t FetchInstruction(Processor_t* spu);
+static void Decode(Processor_t* spu);
+static void PushSPU(Processor_t* spu);
+static void AddSPU(Processor_t* spu);
+static void SubSPU(Processor_t* spu);
+static void MulSPU(Processor_t* spu);
+static void DivvSPU(Processor_t* spu);
+static void OutSPU(Processor_t* spu);
+static void InSPU(Processor_t* spu);
+static void SqrtSPU(Processor_t* spu);
+static void SinSPU(Processor_t* spu);
+static void CosSPU(Processor_t* spu);
+static void DumpSPU(Processor_t* spu);
+static void HltSPU(Processor_t* spu);
+static void JaSPU(Processor_t* spu);
+static void JaeSPU(Processor_t* spu);
+static void JbSPU(Processor_t* spu);
+static void JbeSPU(Processor_t* spu);
+static void JeSPU(Processor_t* spu);
+static void JneSPU(Processor_t* spu);
+static void JmpSPU(Processor_t* spu);
+static void PopSPU(Processor_t* spu);
+
 enum Oshibki_SPU SPUConstrtor(Processor_t* spu, int64_t* massiv_comand_bufer)
 {
     assert(spu != NULL);
@@ -37,7 +60,7 @@ void SPUDtor(Processor_t* spu, int64_t* massiv_comand_bufer)
     free(massiv_comand_bufer);
     massiv_comand_bufer = NULL;
     
-    memset(spu, 0, (size_t)sizeof(spu));
+    memset(spu, 0, sizeof(spu));
 }
 
 int64_t* Chtenie_komand_is_faila(const char* ima_chitaemogo_failaa) 
@@ -72,149 +95,89 @@ enum Oshibki_SPU ExecuteSPU (Processor_t* spu)
     return NET_OSHIBOK_SPU;
 }
 
-int64_t Fetch(Processor_t* spu) //FIXME - FetchInstruction
+int64_t FetchInstruction(Processor_t* spu)
 {
     assert(spu != NULL);
     
     return spu->massiv_comand[spu->ip];
-} //FIXME - в строкку кейсы писатб и ассерт на спю
+}
 
 void Decode(Processor_t* spu)
 {
-    switch (Fetch(spu))
+    switch (FetchInstruction(spu))
     {
-        case Comandi_push:
-        {
-            PushSPU(spu);
-        }
+        case Comandi_push: { PushSPU(spu); }
         break;
 
-        case Comandi_add: 
-        {
-            AddSPU(spu);
-        }
+        case Comandi_add:  { AddSPU(spu);  }
         break;
 
-        case Comandi_sub:
-        {
-            SubSPU(spu);
-        }
+        case Comandi_sub:  { SubSPU(spu);  }
         break;
 
-        case Comandi_mul:
-        {
-            MulSPU(spu);
-        }
+        case Comandi_mul:  { MulSPU(spu);  }
         break;
 
-        case Comandi_divv:
-        {
-            DivvSPU(spu);
-        }
+        case Comandi_divv: { DivvSPU(spu); }
         break;
 
-        case Comandi_out:
-        {
-            OutSPU(spu);
-        }
+        case Comandi_out:  { OutSPU(spu);  }
         break;
 
-        case Comandi_in:
-        {
-            InSPU(spu);
-        }
+        case Comandi_in:   { InSPU(spu);   }
         break;
 
-        case Comandi_sqrt:
-        {
-            SqrtSPU(spu);
-        }
+        case Comandi_sqrt: { SqrtSPU(spu); }
         break;
             
-        case Comandi_sin:
-        {
-            SinSPU(spu);
-        }
+        case Comandi_sin:  { SinSPU(spu);  }
         break;
 
-        case Comandi_cos:
-        {
-            CosSPU(spu);
-        }
+        case Comandi_cos:  { CosSPU(spu);  }
         break;
 
-        case Comandi_dump:
-        {
-            DumpSPU(spu);
-        }
+        case Comandi_dump: { DumpSPU(spu); }
         break;
 
-        case Comandi_hlt:
-        {
-            HltSPU(spu);
-        }
+        case Comandi_hlt:  { HltSPU(spu);  }
         break;
 
-        case Comandi_ja:
-        {
-            JaSPU(spu);
-        }
+        case Comandi_ja:   { JaSPU(spu);   }
         break;
 
-        case Comandi_jae:
-        {
-            JaeSPU(spu); 
-        }
+        case Comandi_jae:  { JaeSPU(spu);  }
         break;
 
-        case Comandi_jb:
-        {
-            JbSPU(spu);
-        }
+        case Comandi_jb:   { JbSPU(spu);   }
         break;
 
-        case Comandi_jbe:
-        {
-            JbeSPU(spu);
-        }
+        case Comandi_jbe:  { JbeSPU(spu);  }
         break;
 
-        case Comandi_je:
-        {
-            JeSPU(spu);
-        }
+        case Comandi_je:   { JeSPU(spu);   }
         break;
 
-        case Comandi_jne:
-        {
-            JneSPU(spu);
-        }
+        case Comandi_jne:  { JneSPU(spu);  }
         break;
 
-        case Comandi_jmp:
-        {
-            JmpSPU(spu);
-        }
+        case Comandi_jmp:  { JmpSPU(spu);  }
         break;
 
-        case Comandi_pop:
-        {
-            PopSPU(spu);
-        }
+        case Comandi_pop:  { PopSPU(spu);  }
         break;
 
-        default: { assert(0); }
+        default:           { assert(0);    }
     }
 }
 
 void PushSPU(Processor_t* spu)
 {
     spu->ip++;
-    int64_t type_pu = Fetch(spu); spu->ip++;
+    int64_t type_pu = FetchInstruction(spu); spu->ip++;
     int64_t resultat_pu = 0;
 
-    if (type_pu & SMOTR_PERVIY_BIT) { resultat_pu = Fetch(spu); spu->ip++; }
-    if (type_pu & SMOTR_VTOROY_BIT) { resultat_pu += spu->registers[Fetch(spu)]; spu->ip++; }
+    if (type_pu & SMOTR_PERVIY_BIT) { resultat_pu = FetchInstruction(spu); spu->ip++; }
+    if (type_pu & SMOTR_VTOROY_BIT) { resultat_pu += spu->registers[FetchInstruction(spu)]; spu->ip++; }
     if (type_pu & SMOTR_TRETIY_BIT) { resultat_pu = spu->ram[resultat_pu]; spu->ip++; }
 
     if (StackPush(&(spu->stk), resultat_pu) > 0) assert(0);
@@ -434,7 +397,7 @@ void JmpSPU(Processor_t* spu)
 void PopSPU(Processor_t* spu)
 {
     spu->ip++;
-    int64_t type_po = Fetch(spu); spu->ip++;
+    int64_t type_po = FetchInstruction(spu); spu->ip++;
     int64_t resultat_po = 0;
 
     int64_t a = 0;
@@ -442,19 +405,19 @@ void PopSPU(Processor_t* spu)
     
     if (type_po & SMOTR_CHETVERTIY_BIT)
     {
-        spu->registers[Fetch(spu)] = a;
+        spu->registers[FetchInstruction(spu)] = a;
         spu->ip++; 
     }
     else
     {
         if (type_po & SMOTR_PERVIY_BIT)
         { 
-            resultat_po = Fetch(spu);
+            resultat_po = FetchInstruction(spu);
             spu->ip++;
         }
         if (type_po & SMOTR_VTOROY_BIT)
         { 
-            resultat_po += spu->registers[Fetch(spu)];
+            resultat_po += spu->registers[FetchInstruction(spu)];
             spu->ip++; 
         }
 

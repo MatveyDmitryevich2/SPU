@@ -22,6 +22,9 @@ const int VTOROY_BIT = 2;
 const int TRETIY_BIT = 4;
 const int CHETVERTIY_BIT = 8;
 
+const size_t RAZMER_MASSIVA_KOMAND = 20;
+const int SHAG_DLA_MASSIVA_COMND = 2;
+
 struct Metki_t
 {
     int64_t adres_stroki;
@@ -33,6 +36,7 @@ struct Asembler_t
     size_t razmer_faila;
     char* buffer;
     int64_t* massiv_comand;
+    int64_t razmer_mas_com;
     int64_t kolichestvo_komand;
     bool metka_na_metki;
     
@@ -76,14 +80,15 @@ const char Registri_dx1[]  = "dx";
 
 
 void Otkritie_asm (Asembler_t* const asem, const char* asm_file_name);
+void Otkritie_bin (Asembler_t* const asem, const char* bin_file_name);
 enum Oshibki_Asemblera AsemblerCtor(Asembler_t* const asem, const char* NACHALNIY_FAIL);
 void AsemblerDtor(Asembler_t* const asem, const char* bin_file_name);
 
-enum Oshibki_Asemblera Zapis_comand(Asembler_t* asem);
+enum Oshibki_Asemblera Zapis_comand(Asembler_t* const asem);
 void Ishet_metku(Asembler_t* asem, char* slovo);
-enum Comandi Ishet_metku_dla_jumpa(Asembler_t* asem, char* argument, enum Comandi komanda_komanda, 
-                                   enum Comandi komanda_argument);
+enum Comandi Ishet_metku_dla_jumpa(Asembler_t* const asem, char* argument);
 enum Comandi Perevod_asembler(const char* bufer_cmd);
 
+void Realoc_na_massiv_comand(Asembler_t* const asem);
 
 #endif //ASEMBLER_H

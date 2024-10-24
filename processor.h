@@ -49,28 +49,4 @@ enum Oshibki_SPU SPUConstrtor(Processor_t* spu, int64_t* massiv_comand_bufer);
 void SPUDtor(Processor_t* spu, int64_t* massiv_comand_bufer);
 enum Oshibki_SPU ExecuteSPU (Processor_t* spu);
 
-int64_t Fetch(Processor_t* spu);
-void Decode(Processor_t* spu);
-// FIXME читай что такое static функции
-void PushSPU(Processor_t* spu);
-void AddSPU(Processor_t* spu);
-void SubSPU(Processor_t* spu);
-void MulSPU(Processor_t* spu);
-void DivvSPU(Processor_t* spu);
-void OutSPU(Processor_t* spu);
-void InSPU(Processor_t* spu);
-void SqrtSPU(Processor_t* spu);
-void SinSPU(Processor_t* spu);
-void CosSPU(Processor_t* spu);
-void DumpSPU(Processor_t* spu);
-void HltSPU(Processor_t* spu);
-void JaSPU(Processor_t* spu);
-void JaeSPU(Processor_t* spu);
-void JbSPU(Processor_t* spu);
-void JbeSPU(Processor_t* spu);
-void JeSPU(Processor_t* spu);
-void JneSPU(Processor_t* spu);
-void JmpSPU(Processor_t* spu);
-void PopSPU(Processor_t* spu);
-
 #endif // PROCESSOR_H
