@@ -13,7 +13,7 @@
 static void Otkritie_asm(Asembler_t* const asem, const char* asm_file_name);
 static void Realoc_na_massiv_comand(Asembler_t* const asem);
 static void Zanulenie_strok_posle_raboti_so_strokoy(Asembler_t* const asem);
-static size_t Schitaet_ramer_stroki(Asembler_t* const asem);
+static size_t Schitaet_razmer_stroki(Asembler_t* const asem);
 static bool Poisk_pustoy_stroki(Asembler_t* const asem);
 static enum Comandi Poisk_komandi(const char* bufer_cmd);
 static enum Comandi Poisk_registra(const char* bufer_cmd);
@@ -30,7 +30,7 @@ static void Zapis_metki(Asembler_t* const asem);
 
 // global --------------------------------------------------------------------------------------------------------------
 
-enum Oshibki_Asemblera AsemblerCtor(Asembler_t* const asem, const char* asm_file_name)
+enum Oshibki_Asemblera Asembler_ctor(Asembler_t* const asem, const char* asm_file_name)
 {
     assert(asem != NULL);
     assert(asm_file_name != NULL);
@@ -44,7 +44,7 @@ enum Oshibki_Asemblera AsemblerCtor(Asembler_t* const asem, const char* asm_file
     return NET_OSHIBOK;
 }
 
-void AsemblerDtor(Asembler_t* const asem)
+void Asembler_dtor(Asembler_t* const asem)
 {
     assert(asem != NULL);
 
@@ -56,43 +56,39 @@ void AsemblerDtor(Asembler_t* const asem)
 
     free(asem->struct_metok);
     asem->struct_metok = NULL;
+
+    memset(asem, 0, sizeof(*asem));
 }
 
-//FIXME Проверить процессор и добавить сюда
 //FIXME Написать Drow
 //FIXME Написать квадратку
-//FIXME Ридми это ЧЗХ забыл уже
+//FIXME Ридми
 
 enum Oshibki_Asemblera Zapis_comand_v_massiv(Asembler_t* const asem)
 {
     assert(asem != NULL);
+    
     Realoc_na_massiv_comand(asem);
 
     for (asem->rabota_s_itoy_strokoi.posicia_v_buffere = asem->buffer;
          asem->rabota_s_itoy_strokoi.posicia_v_buffere < asem->buffer + asem->razmer_faila;
          asem->rabota_s_itoy_strokoi.posicia_v_buffere 
          = strchr(asem->rabota_s_itoy_strokoi.posicia_v_buffere, '\n') + PEREHOD_NA_SLED_STROKU)
-
     {
+        size_t adres_nachala_novoy_stroki = (size_t)(strchr(asem->rabota_s_itoy_strokoi.posicia_v_buffere, '\n') 
+                                                     - asem->rabota_s_itoy_strokoi.posicia_v_buffere);
+
         memcpy(asem->rabota_s_itoy_strokoi.bufer_stroki, asem->rabota_s_itoy_strokoi.posicia_v_buffere, 
-               (size_t)(strchr(asem->rabota_s_itoy_strokoi.posicia_v_buffere, '\n') 
-               - asem->rabota_s_itoy_strokoi.posicia_v_buffere));
+               adres_nachala_novoy_stroki);
         
         sscanf(asem->rabota_s_itoy_strokoi.bufer_stroki, "%s", asem->rabota_s_itoy_strokoi.komanda);
 
-             if (Handler(asem) == METKA)
+        switch (Handler(asem))
         {
-            Zapis_metki(asem);
-        }
-        else if (Handler(asem) == KOMANDA)
-        {
-            Rabota_s_komandoi(asem);
-        }
-        else if (Handler(asem) == PUSTAIA_STROKA) 
-        {}
-        else
-        {
-            assert(0);
+            case METKA: { Zapis_metki(asem); } break;
+            case KOMANDA: { Rabota_s_komandoi(asem); } break;
+            case PUSTAIA_STROKA: {} break;
+            default: assert(0);
         }
 
         Zanulenie_strok_posle_raboti_so_strokoy(asem);
@@ -170,16 +166,16 @@ static void Zapis_metki(Asembler_t* const asem)
 
     if (asem->metka_na_metki)
     {
-    memcpy(asem->struct_metok[asem->schetchik_metok].metka,
-           asem->rabota_s_itoy_strokoi.komanda,
-           Schitaet_ramer_stroki(asem));
+        memcpy(asem->struct_metok[asem->schetchik_metok].metka,
+               asem->rabota_s_itoy_strokoi.komanda,
+               Schitaet_razmer_stroki(asem));
 
-    asem->struct_metok[asem->schetchik_metok].adres_stroki = asem->kolichestvo_komand;
-    asem->schetchik_metok++;
+        asem->struct_metok[asem->schetchik_metok].adres_stroki = asem->kolichestvo_komand;
+        asem->schetchik_metok++;
     }
 }
 
-static size_t Schitaet_ramer_stroki(Asembler_t* const asem)
+static size_t Schitaet_razmer_stroki(Asembler_t* const asem)
 {
     assert(asem != NULL);
     
@@ -197,10 +193,10 @@ static enum Opredelenie_comandi Handler(Asembler_t* const asem)
 {
     assert(asem != NULL);
 
-         if (Poisk_pustoy_stroki(asem))                              { return PUSTAIA_STROKA;   }
-    else if (Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda) > 0) { return KOMANDA;          }
-    else if (Poisk_metki(asem->rabota_s_itoy_strokoi.komanda))       { return METKA;            }
-    else                                                             {return SINTAKSIS_OSHIBKA; }
+         if (Poisk_pustoy_stroki(asem))                              { return PUSTAIA_STROKA;    }
+    else if (Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda) > 0) { return KOMANDA;           }
+    else if (Poisk_metki(asem->rabota_s_itoy_strokoi.komanda))       { return METKA;             }
+    else                                                             { return SINTAKSIS_OSHIBKA; }
 }
 
 static bool Poisk_pustoy_stroki(Asembler_t* const asem)
@@ -209,7 +205,7 @@ static bool Poisk_pustoy_stroki(Asembler_t* const asem)
 
     for (size_t i = 0; asem->rabota_s_itoy_strokoi.bufer_stroki[i] != '\0'; i++)
     {
-        if (!isspace(asem->rabota_s_itoy_strokoi.bufer_stroki[i])) //если не пробельный символ то 0
+        if (!isspace(asem->rabota_s_itoy_strokoi.bufer_stroki[i])) // если не пробельный символ то 0
         {
             return false;
         }
@@ -234,70 +230,70 @@ static enum Comandi Poisk_komandi(const char* bufer_cmd)
 {
     assert(bufer_cmd != NULL);
 
-         if (strncmp(bufer_cmd, Comandi_push_,  sizeof(Comandi_push_))   == 0)   { return Comandi_push; }
-    else if (strncmp(bufer_cmd, Comandi_add_,   sizeof(Comandi_add_))    == 0)   { return Comandi_add;  }
-    else if (strncmp(bufer_cmd, Comandi_sub_,   sizeof(Comandi_sub_))    == 0)   { return Comandi_sub;  }
-    else if (strncmp(bufer_cmd, Comandi_mul_,   sizeof(Comandi_mul_))    == 0)   { return Comandi_mul;  }
-    else if (strncmp(bufer_cmd, Comandi_divv_,  sizeof(Comandi_divv_))   == 0)   { return Comandi_divv; }
-    else if (strncmp(bufer_cmd, Comandi_out_,   sizeof(Comandi_out_))    == 0)   { return Comandi_out;  }
-    else if (strncmp(bufer_cmd, Comandi_in_,    sizeof(Comandi_in_))     == 0)   { return Comandi_in;   }
-    else if (strncmp(bufer_cmd, Comandi_sqrt_,  sizeof(Comandi_sqrt_))   == 0)   { return Comandi_sqrt; }
-    else if (strncmp(bufer_cmd, Comandi_sin_,   sizeof(Comandi_sin_))    == 0)   { return Comandi_sin;  }
-    else if (strncmp(bufer_cmd, Comandi_cos_,   sizeof(Comandi_cos_))    == 0)   { return Comandi_cos;  }
-    else if (strncmp(bufer_cmd, Comandi_dump_,  sizeof(Comandi_dump_))   == 0)   { return Comandi_dump; }
-    else if (strncmp(bufer_cmd, Comandi_hlt_,   sizeof(Comandi_hlt_))    == 0)   { return Comandi_hlt;  }
-    else if (strncmp(bufer_cmd, Comandi_ja_,    sizeof(Comandi_ja_))     == 0)   { return Comandi_ja;   }
-    else if (strncmp(bufer_cmd, Comandi_jae_,   sizeof(Comandi_jae_))    == 0)   { return Comandi_jae;  }
-    else if (strncmp(bufer_cmd, Comandi_jb_,    sizeof(Comandi_jb_))     == 0)   { return Comandi_jb;   }
-    else if (strncmp(bufer_cmd, Comandi_jbe_,   sizeof(Comandi_jbe_))    == 0)   { return Comandi_jbe;  }
-    else if (strncmp(bufer_cmd, Comandi_je_,    sizeof(Comandi_je_))     == 0)   { return Comandi_je;   }
-    else if (strncmp(bufer_cmd, Comandi_jne_,   sizeof(Comandi_jne_))    == 0)   { return Comandi_jne;  }
-    else if (strncmp(bufer_cmd, Comandi_jmp_,   sizeof(Comandi_jmp_))    == 0)   { return Comandi_jmp;  }
-    else if (strncmp(bufer_cmd, Comandi_pop_,   sizeof(Comandi_pop_))    == 0)   { return Comandi_pop;  }
-    else if (strncmp(bufer_cmd, Comandi_call_,  sizeof(Comandi_call_))   == 0)   { return Comandi_call; }
-    else if (strncmp(bufer_cmd, Comandi_ret_,   sizeof(Comandi_ret_))    == 0)   { return Comandi_ret;  }
-    else                                                                         { return (Comandi)-1;  }
+         if (strncmp(bufer_cmd, Comandi_push_, sizeof(Comandi_push_)) == 0) { return Comandi_push;     }
+    else if (strncmp(bufer_cmd, Comandi_add_,  sizeof(Comandi_add_))  == 0) { return Comandi_add;      }
+    else if (strncmp(bufer_cmd, Comandi_sub_,  sizeof(Comandi_sub_))  == 0) { return Comandi_sub;      }
+    else if (strncmp(bufer_cmd, Comandi_mul_,  sizeof(Comandi_mul_))  == 0) { return Comandi_mul;      }
+    else if (strncmp(bufer_cmd, Comandi_divv_, sizeof(Comandi_divv_)) == 0) { return Comandi_divv;     }
+    else if (strncmp(bufer_cmd, Comandi_out_,  sizeof(Comandi_out_))  == 0) { return Comandi_out;      }
+    else if (strncmp(bufer_cmd, Comandi_in_,   sizeof(Comandi_in_))   == 0) { return Comandi_in;       }
+    else if (strncmp(bufer_cmd, Comandi_sqrt_, sizeof(Comandi_sqrt_)) == 0) { return Comandi_sqrt;     }
+    else if (strncmp(bufer_cmd, Comandi_sin_,  sizeof(Comandi_sin_))  == 0) { return Comandi_sin;      }
+    else if (strncmp(bufer_cmd, Comandi_cos_,  sizeof(Comandi_cos_))  == 0) { return Comandi_cos;      }
+    else if (strncmp(bufer_cmd, Comandi_dump_, sizeof(Comandi_dump_)) == 0) { return Comandi_dump;     }
+    else if (strncmp(bufer_cmd, Comandi_hlt_,  sizeof(Comandi_hlt_))  == 0) { return Comandi_hlt;      }
+    else if (strncmp(bufer_cmd, Comandi_ja_,   sizeof(Comandi_ja_))   == 0) { return Comandi_ja;       }
+    else if (strncmp(bufer_cmd, Comandi_jae_,  sizeof(Comandi_jae_))  == 0) { return Comandi_jae;      }
+    else if (strncmp(bufer_cmd, Comandi_jb_,   sizeof(Comandi_jb_))   == 0) { return Comandi_jb;       }
+    else if (strncmp(bufer_cmd, Comandi_jbe_,  sizeof(Comandi_jbe_))  == 0) { return Comandi_jbe;      }
+    else if (strncmp(bufer_cmd, Comandi_je_,   sizeof(Comandi_je_))   == 0) { return Comandi_je;       }
+    else if (strncmp(bufer_cmd, Comandi_jne_,  sizeof(Comandi_jne_))  == 0) { return Comandi_jne;      }
+    else if (strncmp(bufer_cmd, Comandi_jmp_,  sizeof(Comandi_jmp_))  == 0) { return Comandi_jmp;      }
+    else if (strncmp(bufer_cmd, Comandi_pop_,  sizeof(Comandi_pop_))  == 0) { return Comandi_pop;      }
+    else if (strncmp(bufer_cmd, Comandi_call_, sizeof(Comandi_call_)) == 0) { return Comandi_call;     }
+    else if (strncmp(bufer_cmd, Comandi_ret_,  sizeof(Comandi_ret_))  == 0) { return Comandi_ret;      }
+    else if (strncmp(bufer_cmd, Comandi_drow_, sizeof(Comandi_drow_)) == 0) { return Comandi_drow;     }
+    else                                                                    { return Comandi_pizdeeec; }
 }
 
 static enum Comandi Poisk_registra(const char* bufer_cmd)
 {
     assert(bufer_cmd != NULL);
 
-         if (strncmp(bufer_cmd, Registri_ax_,   sizeof(Registri_ax_))    == 0)   { return Registri_ax;  }
-    else if (strncmp(bufer_cmd, Registri_bx_,   sizeof(Registri_bx_))    == 0)   { return Registri_bx;  }
-    else if (strncmp(bufer_cmd, Registri_cx_,   sizeof(Registri_cx_))    == 0)   { return Registri_cx;  }
-    else if (strncmp(bufer_cmd, Registri_dx_,   sizeof(Registri_dx_))    == 0)   { return Registri_dx;  }
-    else                                                                         { return (Comandi)-1;  }
+         if (strncmp(bufer_cmd, Registri_ax_, sizeof(Registri_ax_)) == 0) { return Registri_ax;      }
+    else if (strncmp(bufer_cmd, Registri_bx_, sizeof(Registri_bx_)) == 0) { return Registri_bx;      }
+    else if (strncmp(bufer_cmd, Registri_cx_, sizeof(Registri_cx_)) == 0) { return Registri_cx;      }
+    else if (strncmp(bufer_cmd, Registri_dx_, sizeof(Registri_dx_)) == 0) { return Registri_dx;      }
+    else                                                                  { return Comandi_pizdeeec; }
 }
 
 static void Rabota_s_komandoi(Asembler_t* const asem)
 {
-    fprintf(stderr, "%d\n", Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda));
+    assert(asem != NULL);
 
-         if ((Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda) >= Comandi_sub
-             && Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda) <= Comandi_hlt)
-             || Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda) == Comandi_ret
-             || Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda) == Comandi_add)
+    Comandi komanda = Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda);
+
+    fprintf(stderr, "%d\n", komanda);
+
+    if ((komanda >= Comandi_sub && komanda <= Comandi_hlt)
+        || komanda == Comandi_ret
+        || komanda == Comandi_add
+        || komanda == Comandi_drow)
     {
         //fprintf(stderr,"drugie---\n");
         Rabota_s_comandami_bez_argumenta(asem);
     }
-
-    else if ((Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda) >= Comandi_ja
-            && Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda)  <= Comandi_jne)
-            || Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda)  == Comandi_call)
+    else if ((komanda >= Comandi_ja && komanda <= Comandi_jne) || komanda == Comandi_call)
     {
         //fprintf(stderr,"jamp---\n");
         Rabota_s_poprigunchikami(asem);
     }
-
-    else if (Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda)  == Comandi_push)
+    else if (komanda == Comandi_push)
     {
         //fprintf(stderr,"push---\n");
         Rabota_s_push(asem);
     }
-
-    else if (Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda)  == Comandi_pop)
+    else if (komanda == Comandi_pop)
     {
         //fprintf(stderr,"pop---\n");
         Rabota_s_pop(asem);
@@ -307,6 +303,7 @@ static void Rabota_s_komandoi(Asembler_t* const asem)
 static void Rabota_s_comandami_bez_argumenta(Asembler_t* const asem)
 {
     assert(asem != NULL);
+
     Realoc_na_massiv_comand(asem);
 
     asem->massiv_comand[asem->kolichestvo_komand++] = Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda);
@@ -315,19 +312,23 @@ static void Rabota_s_comandami_bez_argumenta(Asembler_t* const asem)
 static void Rabota_s_poprigunchikami(Asembler_t* const asem)
 {
     assert(asem != NULL);
+
     Realoc_na_massiv_comand(asem);
 
     sscanf(asem->rabota_s_itoy_strokoi.bufer_stroki, "%s %s",
            asem->rabota_s_itoy_strokoi.komanda,
            asem->rabota_s_itoy_strokoi.argument);
 
-    asem->massiv_comand[asem->kolichestvo_komand++] = Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda);
-    asem->massiv_comand[asem->kolichestvo_komand++] = Ishet_metku_dla_jumpa(asem);
+    asem->massiv_comand[asem->kolichestvo_komand] = Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda);
+    asem->kolichestvo_komand++;
+    asem->massiv_comand[asem->kolichestvo_komand] = Ishet_metku_dla_jumpa(asem);
+    asem->kolichestvo_komand++;
 }
 
 static int64_t Ishet_metku_dla_jumpa(Asembler_t* const asem)
 {
     assert(asem != NULL);
+
     Realoc_na_massiv_comand(asem);
 
     for (size_t i = 0; i < MAX_COLICHESTVO_METOK; i++)
@@ -344,9 +345,10 @@ static int64_t Ishet_metku_dla_jumpa(Asembler_t* const asem)
 static void Rabota_s_push(Asembler_t* const asem)
 {
     assert(asem != NULL);
+    
     Realoc_na_massiv_comand(asem);
 
-    if    (strchr(asem->rabota_s_itoy_strokoi.bufer_stroki, '[') == NULL) 
+    if (strchr(asem->rabota_s_itoy_strokoi.bufer_stroki, '[') == NULL) 
     {
         int kolichaestvo_slov_v_stroke = sscanf(asem->rabota_s_itoy_strokoi.bufer_stroki, "%s %s + %s",
                                                 asem->rabota_s_itoy_strokoi.komanda,

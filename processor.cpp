@@ -35,6 +35,9 @@ static void JeSPU(Processor_t* spu);
 static void JneSPU(Processor_t* spu);
 static void JmpSPU(Processor_t* spu);
 static void PopSPU(Processor_t* spu);
+static void CallSPU(Processor_t* spu);
+static void RetSPU(Processor_t* spu);
+static void DrowSPU(Processor_t* spu);
 
 enum Oshibki_SPU SPUConstrtor(Processor_t* spu, int64_t* massiv_comand_bufer)
 {
@@ -166,11 +169,39 @@ void Decode(Processor_t* spu)
         case Comandi_pop:  { PopSPU(spu);  }
         break;
 
+        case Comandi_call: { CallSPU(spu); }
+        break;
+
+        case Comandi_ret:  { RetSPU(spu);  }
+        break;
+
+        case Comandi_drow: { DrowSPU(spu); }
+        break;
+
         default:           { assert(0);    }
     }
 }
 
-void PushSPU(Processor_t* spu)
+static void DrowSPU(Processor_t* spu)
+{
+    
+}
+static void CallSPU(Processor_t* spu)
+{
+    if (StackPush(&(spu->stk), spu->ip + PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT) > 0) assert(0);
+    spu->ip = spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU];
+    DEB_PR("21\n");
+}
+
+static void RetSPU(Processor_t* spu)
+{
+    int64_t a = 0;
+    if (StackPop(&(spu->stk), &a) > 0) assert(0);
+    spu->ip = spu->massiv_comand[a];
+    DEB_PR("22\n");
+}
+
+static void PushSPU(Processor_t* spu)
 {
     spu->ip++;
     int64_t type_pu = FetchInstruction(spu); spu->ip++;
@@ -185,7 +216,7 @@ void PushSPU(Processor_t* spu)
     DEB_PR("1\n");
 }
 
-void AddSPU(Processor_t* spu)
+static void AddSPU(Processor_t* spu)
 {
     int64_t a = 0;
     int64_t b = 0;
@@ -199,7 +230,7 @@ void AddSPU(Processor_t* spu)
     DEB_PR("2\n");
 }
 
-void SubSPU(Processor_t* spu)
+static void SubSPU(Processor_t* spu)
 {
     int64_t a = 0;
     int64_t b = 0;
@@ -212,7 +243,7 @@ void SubSPU(Processor_t* spu)
     DEB_PR("4\n");
 }
 
-void MulSPU(Processor_t* spu)
+static void MulSPU(Processor_t* spu)
 {
     int64_t a = 0;
     int64_t b = 0;
@@ -225,7 +256,7 @@ void MulSPU(Processor_t* spu)
     DEB_PR("5\n");
 }
 
-void DivvSPU(Processor_t* spu)
+static void DivvSPU(Processor_t* spu)
 {
     int64_t a = 0;
     int64_t b = 0;
@@ -241,7 +272,7 @@ void DivvSPU(Processor_t* spu)
     DEB_PR("6\n");
 }
 
-void OutSPU(Processor_t* spu)
+static void OutSPU(Processor_t* spu)
 {
     int64_t a = 0;
     if (StackPop(&(spu->stk), &a) > 0) assert(0);
@@ -252,7 +283,7 @@ void OutSPU(Processor_t* spu)
     DEB_PR("7\n");
 }
 
-void InSPU(Processor_t* spu)
+static void InSPU(Processor_t* spu)
 {
     int64_t a = 0;
     scanf("%ld", &a);
@@ -262,7 +293,7 @@ void InSPU(Processor_t* spu)
     DEB_PR("8\n");
 }
 
-void SqrtSPU(Processor_t* spu)
+static void SqrtSPU(Processor_t* spu)
 {
     int64_t a = 0;
 
@@ -276,7 +307,7 @@ void SqrtSPU(Processor_t* spu)
     DEB_PR("9\n");
 }
 
-void SinSPU(Processor_t* spu)
+static void SinSPU(Processor_t* spu)
 {
     int64_t a = 0;
     if (StackPop(&(spu->stk), &a) > 0) assert(0);
@@ -287,7 +318,7 @@ void SinSPU(Processor_t* spu)
     DEB_PR("10\n");
 }
 
-void CosSPU(Processor_t* spu)
+static void CosSPU(Processor_t* spu)
 {
     int64_t a = 0;
     if (StackPop(&(spu->stk), &a) > 0) assert(0);
@@ -298,7 +329,7 @@ void CosSPU(Processor_t* spu)
     DEB_PR("11\n");
 }
 
-void DumpSPU(Processor_t* spu)
+static void DumpSPU(Processor_t* spu)
 {
     for (long long i = (long long)spu->stk.vacant_place - 1; i >= 0; i--)
     {
@@ -310,13 +341,13 @@ void DumpSPU(Processor_t* spu)
     DEB_PR("12\n");
 }
 
-void HltSPU(Processor_t* spu)
+static void HltSPU(Processor_t* spu)
 {
     DEB_PR("13\n");
     spu->vikluchatel_cikla = PEREHOD_NA_KOMANDU;
 }
 
-void JaSPU(Processor_t* spu)
+static void JaSPU(Processor_t* spu)
 {
     int64_t a = 0;
     int64_t b = 0;
@@ -328,7 +359,7 @@ void JaSPU(Processor_t* spu)
     DEB_PR("14\n");
 }
 
-void JaeSPU(Processor_t* spu)
+static void JaeSPU(Processor_t* spu)
 {
     int64_t a = 0;
     int64_t b = 0;
@@ -340,7 +371,7 @@ void JaeSPU(Processor_t* spu)
     DEB_PR("15\n");
 }
 
-void JbSPU(Processor_t* spu)
+static void JbSPU(Processor_t* spu)
 {
     int64_t a = 0;
     int64_t b = 0;
@@ -352,7 +383,7 @@ void JbSPU(Processor_t* spu)
     DEB_PR("16\n");
 }
 
-void JbeSPU(Processor_t* spu)
+static void JbeSPU(Processor_t* spu)
 {
     int64_t a = 0;
     int64_t b = 0;
@@ -364,7 +395,7 @@ void JbeSPU(Processor_t* spu)
     DEB_PR("17\n");
 }
 
-void JeSPU(Processor_t* spu)
+static void JeSPU(Processor_t* spu)
 {
     int64_t a = 0;
     int64_t b = 0;
@@ -376,7 +407,7 @@ void JeSPU(Processor_t* spu)
     DEB_PR("18\n");
 }
 
-void JneSPU(Processor_t* spu)
+static void JneSPU(Processor_t* spu)
 {
     int64_t a = 0;
     int64_t b = 0;
@@ -388,13 +419,13 @@ void JneSPU(Processor_t* spu)
     DEB_PR("19\n");
 }
 
-void JmpSPU(Processor_t* spu)
+static void JmpSPU(Processor_t* spu)
 {
     spu->ip = spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU];
     DEB_PR("20\n");
 }
 
-void PopSPU(Processor_t* spu)
+static void PopSPU(Processor_t* spu)
 {
     spu->ip++;
     int64_t type_po = FetchInstruction(spu); spu->ip++;

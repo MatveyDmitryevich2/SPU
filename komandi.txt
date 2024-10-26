@@ -1,10 +1,12 @@
-in
-pop cx
-call FACTORIAL
-push ax
-out
-hlt
+main:
+                in
+                pop     cx
+                call    FACTORIAL; lofnodsufiusd
+                push    ax
+                out
+                hlt
+
 FACTORIAL:
-push 3
-pop ax
-ret
+                push    3
+                pop     ax
+                ret

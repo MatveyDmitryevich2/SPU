@@ -3,7 +3,7 @@
 
 enum Comandi
 {
-    Comandi_metka = -1,
+    Comandi_pizdeeec = -1,
 
     Comandi_push   = 1,
     Comandi_pop    = 3,
@@ -27,6 +27,7 @@ enum Comandi
     Comandi_je     = 18,
     Comandi_jne    = 19,
     Comandi_jmp    = 20,
+    Comandi_drow   = 23,
 
     Comandi_call   = 21,
     Comandi_ret    = 22,
