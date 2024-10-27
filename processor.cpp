@@ -37,7 +37,6 @@ static void JmpSPU(Processor_t* spu);
 static void PopSPU(Processor_t* spu);
 static void CallSPU(Processor_t* spu);
 static void RetSPU(Processor_t* spu);
-static void DrowSPU(Processor_t* spu);
 
 enum Oshibki_SPU SPUConstrtor(Processor_t* spu, int64_t* massiv_comand_bufer)
 {
@@ -175,17 +174,13 @@ void Decode(Processor_t* spu)
         case Comandi_ret:  { RetSPU(spu);  }
         break;
 
-        case Comandi_drow: { DrowSPU(spu); }
-        break;
+        // case Comandi_drow: { DrowSPU(spu); }
+        // break;
 
         default:           { assert(0);    }
     }
 }
 
-static void DrowSPU(Processor_t* spu)
-{
-    
-}
 static void CallSPU(Processor_t* spu)
 {
     if (StackPush(&(spu->stk), spu->ip + PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT) > 0) assert(0);
@@ -197,7 +192,8 @@ static void RetSPU(Processor_t* spu)
 {
     int64_t a = 0;
     if (StackPop(&(spu->stk), &a) > 0) assert(0);
-    spu->ip = spu->massiv_comand[a];
+    spu->ip = a;
+    fprintf(stderr, "\n---a = %ld---\n", a);
     DEB_PR("22\n");
 }
 
@@ -287,7 +283,7 @@ static void InSPU(Processor_t* spu)
 {
     int64_t a = 0;
     scanf("%ld", &a);
-    if (StackPush(&(spu->stk), (int)spu->massiv_comand[a]) > 0) assert(0);
+    if (StackPush(&(spu->stk), a) > 0) assert(0);
 
     spu->ip += PEREHOD_NA_KOMANDU;
     DEB_PR("8\n");
@@ -336,6 +332,7 @@ static void DumpSPU(Processor_t* spu)
         fprintf(stderr, "   [%lld] = ", i);
         fprintf(stderr, "%lu\n", (long unsigned)spu->stk.array_data[i]);
     }
+    fprintf(stderr, "   ---\n");
 
     spu->ip += PEREHOD_NA_KOMANDU;
     DEB_PR("12\n");

@@ -37,8 +37,8 @@ enum Smotrenie_bitov // FIXME СМОТРЕНИЕ???
 };
 
 
-const char NACHALNIY_FAIL[]                = "komandi.txt";
-const char KONECNIY_FAIL[]                 = "chislovie_komani.txt";
+const char NACHALNIY_FAIL[]                = "komandi.asm";
+const char KONECNIY_FAIL[]                 = "chislovie_komandi.bin";
 const size_t PEREHOD_NA_SLED_STROKU        = 1; 
 const size_t SDVIG_V_MASSIVE               = 2; // НУ ТЫ И ДАУН - Нигде не используется
 

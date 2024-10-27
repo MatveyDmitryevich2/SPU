@@ -32,7 +32,7 @@ const int KOLICHESTVO_REGISTROV                                = 4;
 
 const int RAZMER_ram                                           = 2001;
 
-const char IMA_CHITAEMOGO_FAILA[]                              = "Chislovie_komani.txt";
+const char IMA_CHITAEMOGO_FAILA[]                              = "chislovie_komandi.bin";
 
 
 struct Processor_t
