@@ -20,19 +20,19 @@ enum Oshibki_SPU
 };
 
 
-const int SMOTR_PERVIY_BIT                                     = 1;
-const int SMOTR_VTOROY_BIT                                     = 2;
-const int SMOTR_TRETIY_BIT                                     = 4;
-const int SMOTR_CHETVERTIY_BIT                                 = 8;
+static const int SMOTR_PERVIY_BIT                                     = 1;
+static const int SMOTR_VTOROY_BIT                                     = 2;
+static const int SMOTR_TRETIY_BIT                                     = 4;
+static const int SMOTR_CHETVERTIY_BIT                                 = 8;
 
-const int PEREHOD_NA_KOMANDU                                   = 1;  
-const int PEREHOD_NA_AEGUMENT                                  = 1;
+static const int PEREHOD_NA_KOMANDU                                   = 1;  
+static const int PEREHOD_NA_AEGUMENT                                  = 1;
 
-const int KOLICHESTVO_REGISTROV                                = 4;
+static const int KOLICHESTVO_REGISTROV                                = 4;
 
-const int RAZMER_ram                                           = 2001;
+static const int RAZMER_ram                                           = 10000;
 
-const char IMA_CHITAEMOGO_FAILA[]                              = "chislovie_komandi.bin";
+static const char IMA_CHITAEMOGO_FAILA[]                              = "chislovie_komandi.bin";
 
 
 struct Processor_t

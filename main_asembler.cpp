@@ -17,10 +17,10 @@
 //git push
 
 
-int main(void)
+int main(const int argc, const char *argv[])
 {
     Asembler_t asem = {};
-    Asembler_ctor(&asem, NACHALNIY_FAIL);
+    Asembler_ctor(&asem, Schitivanie_nasvania_faila(argc, argv));
 
     Zapis_comand_v_massiv(&asem);
     asem.kolichestvo_komand = 0;

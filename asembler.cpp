@@ -84,7 +84,8 @@ enum Oshibki_asemblera Zapis_comand_v_massiv(Asembler_t* const asem)
             case METKA: { Zapis_metki(asem); } break;
             case KOMANDA: { Rabota_s_komandoi(asem); } break;
             case PUSTAIA_STROKA: {} break;
-            default: assert(0);
+            case SINTAKSIS_OSHIBKA: {} break; //доделаьб
+            default: assert(SINTAKSIS_OSHIBKA);
         }
 
         Zanulenie_strok_posle_raboti_so_strokoy(asem);
@@ -109,6 +110,16 @@ void Zapis_massiva_cmd_v_fail (Asembler_t* const asem, const char* bin_file_name
     fwrite(asem->massiv_comand, sizeof(int64_t), asem->kolichestvo_komand, komandi_v_chislah);
     fclose(komandi_v_chislah);
     komandi_v_chislah = NULL;
+}
+
+const char* Schitivanie_nasvania_faila(const int argc, const char* const argv[])
+{
+    if (argc == 2)
+    {
+        return argv[1];
+    }
+
+    return NACHALNIY_FAIL;
 }
 
 // static --------------------------------------------------------------------------------------------------------------

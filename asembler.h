@@ -22,10 +22,10 @@ enum Oshibki_asemblera
 
 enum Opredelenie_comandi
 {
+    SINTAKSIS_OSHIBKA                      = 0,
     METKA                                  = 1,
     KOMANDA                                = 2,
     PUSTAIA_STROKA                         = 3,
-    SINTAKSIS_OSHIBKA                      = 4,
 };
 
 enum Prosmotr_bitov
@@ -37,19 +37,19 @@ enum Prosmotr_bitov
 };
 
 
-const char NACHALNIY_FAIL[]                = "komandi.asm";
-const char KONECNIY_FAIL[]                 = "chislovie_komandi.bin";
-const size_t PEREHOD_NA_SLED_STROKU        = 1;
+static const char* NACHALNIY_FAIL                 = "komandi.asm";
+static const char* KONECNIY_FAIL                  = "chislovie_komandi.bin";
+static const size_t PEREHOD_NA_SLED_STROKU        = 1;
 
-const size_t RAZMER_COMANDI                = 25;
-const size_t RAZMER_ARGUMENTA              = 25;
+static const size_t RAZMER_COMANDI                = 25;
+static const size_t RAZMER_ARGUMENTA              = 25;
+ 
+static const size_t MAX_COLICHESTVO_METOK         = 16;
+static const size_t POSHLO_NAHUI_DVOETOCHIE       = 1;
 
-const size_t MAX_COLICHESTVO_METOK         = 16;
-const size_t POSHLO_NAHUI_DVOETOCHIE       = 1;
-
-const size_t CHASTOTA_PROVERKI_KOL_COMAND  = 5;
-const size_t RAZMER_MASSIVA_COMAND         = 20;
-const size_t SHAG_DLA_MASSIVA_COMAND       = 2;
+static const size_t CHASTOTA_PROVERKI_KOL_COMAND  = 5;
+static const size_t RAZMER_MASSIVA_COMAND         = 20;
+static const size_t SHAG_DLA_MASSIVA_COMAND       = 2;
 
 
 struct Metki_t
@@ -87,42 +87,43 @@ struct Asembler_t
 };
 
 
-const char Comandi_push_[] = "push";
-const char Comandi_pop_ [] = "pop";
-const char Comandi_add_ [] = "add";
-const char Comandi_sub_ [] = "sub";
-const char Comandi_mul_ [] = "mul";
-const char Comandi_divv_[] = "div";
-const char Comandi_out_ [] = "out";
-const char Comandi_in_  [] = "in";
-const char Comandi_sqrt_[] = "sqrt";
-const char Comandi_sin_ [] = "sin";
-const char Comandi_cos_ [] = "cos";
+static const char Comandi_push_[] = "push";
+static const char Comandi_pop_ [] = "pop";
+static const char Comandi_add_ [] = "add";
+static const char Comandi_sub_ [] = "sub";
+static const char Comandi_mul_ [] = "mul";
+static const char Comandi_divv_[] = "div";
+static const char Comandi_out_ [] = "out";
+static const char Comandi_in_  [] = "in";
+static const char Comandi_sqrt_[] = "sqrt";
+static const char Comandi_sin_ [] = "sin";
+static const char Comandi_cos_ [] = "cos";
 
-const char Comandi_drow_[] = "drow";
-const char Comandi_dump_[] = "dump";
-const char Comandi_hlt_ [] = "hlt";
+static const char Comandi_drow_[] = "drow";
+static const char Comandi_dump_[] = "dump";
+static const char Comandi_hlt_ [] = "hlt";
 
-const char Comandi_ja_  [] = "ja";
-const char Comandi_jae_ [] = "jae";
-const char Comandi_jb_  [] = "jb";
-const char Comandi_jbe_ [] = "jbe";
-const char Comandi_je_  [] = "je";
-const char Comandi_jne_ [] = "jne";
-const char Comandi_jmp_ [] = "jmp";
+static const char Comandi_ja_  [] = "ja";
+static const char Comandi_jae_ [] = "jae";
+static const char Comandi_jb_  [] = "jb";
+static const char Comandi_jbe_ [] = "jbe";
+static const char Comandi_je_  [] = "je";
+static const char Comandi_jne_ [] = "jne";
+static const char Comandi_jmp_ [] = "jmp";
 
-const char Comandi_call_[] = "call";
-const char Comandi_ret_ [] = "ret";
+static const char Comandi_call_[] = "call";
+static const char Comandi_ret_ [] = "ret";
 
-const char Registri_ax_ [] = "ax";
-const char Registri_bx_ [] = "bx";
-const char Registri_cx_ [] = "cx";
-const char Registri_dx_ [] = "dx";
+static const char Registri_ax_ [] = "ax";
+static const char Registri_bx_ [] = "bx";
+static const char Registri_cx_ [] = "cx";
+static const char Registri_dx_ [] = "dx";
 
 
 enum Oshibki_asemblera Asembler_ctor(Asembler_t* const asem, const char* asm_file_name);
 void Asembler_dtor(Asembler_t* const asem);
 enum Oshibki_asemblera Zapis_comand_v_massiv(Asembler_t* const asem);
 void Zapis_massiva_cmd_v_fail (Asembler_t* const asem, const char* bin_file_name);
+const char* Schitivanie_nasvania_faila(const int argc, const char* const argv[]);
 
 #endif //ASEMBLER_H

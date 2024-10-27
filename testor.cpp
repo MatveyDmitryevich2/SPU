@@ -5,43 +5,38 @@
 #include <assert.h>
 #include <stdint.h>
 
+static void DrowSPU(int64_t* massiv);
+
 int main()
 {
-    char komanda[25] = {};
-    char type[25] = {};
-    char argument[25] = {};
-    char argument_2[25] = {};
+    int64_t ram[10000];
+
+    for(size_t a = 1; a <= 51; a++)
+    {
+        for (size_t i = 0; i <= 50; i++)
+        {
+            ram[1000 + i + a * 51] = 0;
+            if (((i - 25) * (i - 25) + (a - (25 + 1)) * (a - (25 + 1))) == 625) { ram[1000 + i + a * 51] = 1; }
+        }
+    }
+    ram[1000 + 25 + 26 * 51] = 4;
 
 
 
+    DrowSPU(ram);
 
-    char numbers1[40] = { "push 4" };
-    int kolichaestvo_slov_v_stroke = sscanf(numbers1, "%s %s %s %s", komanda, type, 
-                                                                     argument, argument_2);
+    return 0;
+}
 
-    fprintf(stderr, "push 4 --- %d ----- %s %s %s %s\n", kolichaestvo_slov_v_stroke, 
-                                                         komanda, type, 
-                                                         argument, argument_2);
-
-
-    char numbers2[40] = { "push 4 + ax" };
-    kolichaestvo_slov_v_stroke = sscanf(numbers2, "%s %s %s %s", komanda, type, 
-                                                                 argument, argument_2);
-
-    fprintf(stderr, "push 4 + ax --- %d ----- %s %s %s %s\n", kolichaestvo_slov_v_stroke, 
-                                                              komanda, type, argument, argument_2);
-
-    char numbers3[40] = { "push [ 4 ]" };
-    kolichaestvo_slov_v_stroke = sscanf(numbers3, "%s %s %s %s", komanda, type, 
-                                                                 argument, argument_2);
-
-    fprintf(stderr, "push [ 4 ] --- %d ----- %s %s %s %s\n", kolichaestvo_slov_v_stroke, 
-                                                             komanda, type, argument, argument_2);
-
-    char numbers4[40] = { "push [ 4 + dx ]" };
-    kolichaestvo_slov_v_stroke = sscanf(numbers4, "%s %s %s %s", komanda, type, 
-                                                                 argument, argument_2);
-                                                                 
-    fprintf(stderr, "push [ 4 + dx ] --- %d ----- %s %s %s %s\n", kolichaestvo_slov_v_stroke, komanda, 
-                                                                  type, argument, argument_2);
+static void DrowSPU(int64_t* massiv) //с тысячного адерса начинается видеопамять
+{
+    for(size_t a = 1; a <= 51; a++)
+    {
+        for (size_t i = 0; i <= 50; i++)
+        {
+            if (massiv[i + a * 51 + 1000] == 0) { fprintf(stderr, "%c ", '*'); }
+            else                                { fprintf(stderr, "%c ", '0'); }
+        }
+        fprintf(stderr, "\n");
+    }
 }

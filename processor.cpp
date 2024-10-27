@@ -37,6 +37,7 @@ static void JmpSPU(Processor_t* spu);
 static void PopSPU(Processor_t* spu);
 static void CallSPU(Processor_t* spu);
 static void RetSPU(Processor_t* spu);
+static void DrowSPU(Processor_t* spu);
 
 enum Oshibki_SPU Constructor_spu(Processor_t* spu, int64_t* massiv_comand_bufer)
 {
@@ -174,12 +175,29 @@ void Decode(Processor_t* spu)
         case Comandi_ret:  { RetSPU(spu);  }
         break;
 
-        // case Comandi_drow: { DrowSPU(spu); }
-        // break;
+        case Comandi_drow: { DrowSPU(spu); }
+        break;
 
         default:           { assert(0);    }
     }
 }
+
+static void DrowSPU(Processor_t* spu) //с тысячного адерса начинается видеопамять
+{
+    for(size_t a = 1; a <= 50; a++)
+    {
+        for (size_t i = 0; i < 50; i++)
+        {
+            if (spu->ram[i + 1000] == 0) { fprintf(stderr, "%c", '*'); }
+            else                         { fprintf(stderr, "%c", '0'); }
+        }
+        fprintf(stderr, "\n");
+    }
+
+    spu->ip++;
+    DEB_PR("23\n");
+}
+
 
 static void CallSPU(Processor_t* spu)
 {

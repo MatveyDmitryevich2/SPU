@@ -9,9 +9,9 @@
 #include <stdint.h>
 
 typedef int64_t StackElem_t;
-const int SHAG_V_REALOC = 2;
-const int OBRATNIY_SHAG_V_REALOC = 4;
-const uint64_t KONOREYKA = 29304148;
+static const int SHAG_V_REALOC = 2;
+static const int OBRATNIY_SHAG_V_REALOC = 4;
+static const uint64_t KONOREYKA = 29304148;
 
 enum Oshibki_Stacka
 {
@@ -24,7 +24,9 @@ enum Oshibki_Stacka
     PIZDA_HAKERI_SPIZDILI_CHO_TO           = 6,
     KONREYKI_POEHALI                       = 7
 };
+
 typedef char StackElen_t;
+
 struct Stack_t
 {
     uint64_t konoreyka_left;
