@@ -12,15 +12,15 @@
 #include "globalniy_enum.h" 
 
 
-enum Oshibki_Asemblera // <-------------------------
-{ //                                               |
-    NET_OSHIBOK                            = 0, // |
-    UKAZTENEL_NA_STRUKTURU_ASEMBLER_POEHAL = 1, // | Разные стили названий енумов
-    UKAZTENEL_NA_MASSIV_ASEMBLER_POEHAL    = 2, // |
-    OSHINKA_PRI_OTKRITII_FAILA             = 3, // |
-}; //                                              |
-//                                                 |
-enum Opredelenie_comandi // <----------------------
+enum Oshibki_asemblera 
+{
+    NET_OSHIBOK                            = 0,
+    UKAZTENEL_NA_STRUKTURU_ASEMBLER_POEHAL = 1,
+    UKAZTENEL_NA_MASSIV_ASEMBLER_POEHAL    = 2,
+    OSHINKA_PRI_OTKRITII_FAILA             = 3,
+};
+
+enum Opredelenie_comandi
 {
     METKA                                  = 1,
     KOMANDA                                = 2,
@@ -28,7 +28,7 @@ enum Opredelenie_comandi // <----------------------
     SINTAKSIS_OSHIBKA                      = 4,
 };
 
-enum Smotrenie_bitov // FIXME СМОТРЕНИЕ???
+enum Prosmotr_bitov
 {
     PERVIY_BIT                             = 1,
     VTOROY_BIT                             = 2,
@@ -39,8 +39,7 @@ enum Smotrenie_bitov // FIXME СМОТРЕНИЕ???
 
 const char NACHALNIY_FAIL[]                = "komandi.asm";
 const char KONECNIY_FAIL[]                 = "chislovie_komandi.bin";
-const size_t PEREHOD_NA_SLED_STROKU        = 1; 
-const size_t SDVIG_V_MASSIVE               = 2; // НУ ТЫ И ДАУН - Нигде не используется
+const size_t PEREHOD_NA_SLED_STROKU        = 1;
 
 const size_t RAZMER_COMANDI                = 25;
 const size_t RAZMER_ARGUMENTA              = 25;
@@ -48,9 +47,9 @@ const size_t RAZMER_ARGUMENTA              = 25;
 const size_t MAX_COLICHESTVO_METOK         = 16;
 const size_t POSHLO_NAHUI_DVOETOCHIE       = 1;
 
-const size_t CHASTOTA_PROVERKI_KOL_COMAND  = 5; // FIXME НАЗВАНИЕ ГОВНО
-const size_t RAZMER_MASSIVA_KOMAND         = 20; // НУ ТЫ И ДАУН - Так COMAND или KOMAND
-const size_t SHAG_DLA_MASSIVA_COMND        = 2; // FIXME C(K)OMAND
+const size_t CHASTOTA_PROVERKI_KOL_COMAND  = 5;
+const size_t RAZMER_MASSIVA_COMAND         = 20;
+const size_t SHAG_DLA_MASSIVA_COMAND       = 2;
 
 
 struct Metki_t
@@ -62,22 +61,22 @@ struct Metki_t
 struct Info_o_stroke 
 {
     char komanda[RAZMER_COMANDI];
-    char type[RAZMER_COMANDI]; // FIXME tip?
+    char type[RAZMER_COMANDI];
     char argument[RAZMER_ARGUMENTA];
     char argument_2[RAZMER_ARGUMENTA];
-    char bufer_stroki[RAZMER_COMANDI * 2 + RAZMER_ARGUMENTA * 2];
+    char buffer_stroki[RAZMER_COMANDI * 2 + RAZMER_ARGUMENTA * 2];
 
-    char* posicia_v_buffere; // FIXME buf(f)er?
+    char* posicia_v_buffere;
 };
 
 struct Asembler_t
 {
     size_t razmer_faila;
 
-    char* buffer; // FIXME buf(f)er?
+    char* buffer;
 
     int64_t* massiv_comand;
-    size_t razmer_mas_com; // FIXME mas_com???
+    size_t razmer_masiva_comand;
     size_t kolichestvo_komand;
 
     bool metka_na_metki;
@@ -121,9 +120,9 @@ const char Registri_cx_ [] = "cx";
 const char Registri_dx_ [] = "dx";
 
 
-enum Oshibki_Asemblera Asembler_ctor(Asembler_t* const asem, const char* asm_file_name);
+enum Oshibki_asemblera Asembler_ctor(Asembler_t* const asem, const char* asm_file_name);
 void Asembler_dtor(Asembler_t* const asem);
-enum Oshibki_Asemblera Zapis_comand_v_massiv(Asembler_t* const asem);
-void Otkritie_bin (Asembler_t* const asem, const char* bin_file_name); // FIXME Лишний пробел
+enum Oshibki_asemblera Zapis_comand_v_massiv(Asembler_t* const asem);
+void Zapis_massiva_cmd_v_fail (Asembler_t* const asem, const char* bin_file_name);
 
-#endif // FIXME Не подписал какой if закончил (обычно пишешь)
+#endif //ASEMBLER_H

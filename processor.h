@@ -47,8 +47,8 @@ struct Processor_t
 
 
 int64_t* Chtenie_komand_is_faila(const char* IMA_CHITAEMOGO_FAILA);
-enum Oshibki_SPU SPUConstrtor(Processor_t* spu, int64_t* massiv_comand_bufer);
-void SPUDtor(Processor_t* spu, int64_t* massiv_comand_bufer);
-enum Oshibki_SPU ExecuteSPU (Processor_t* spu);
+enum Oshibki_SPU Constructor_spu(Processor_t* spu, int64_t* massiv_comand_bufer);
+void Dtor_spu(Processor_t* spu, int64_t* massiv_comand_bufer);
+enum Oshibki_SPU Execute_spu (Processor_t* spu);
 
 #endif // PROCESSOR_H

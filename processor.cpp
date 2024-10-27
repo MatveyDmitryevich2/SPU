@@ -38,7 +38,7 @@ static void PopSPU(Processor_t* spu);
 static void CallSPU(Processor_t* spu);
 static void RetSPU(Processor_t* spu);
 
-enum Oshibki_SPU SPUConstrtor(Processor_t* spu, int64_t* massiv_comand_bufer)
+enum Oshibki_SPU Constructor_spu(Processor_t* spu, int64_t* massiv_comand_bufer)
 {
     assert(spu != NULL);
     assert(massiv_comand_bufer != NULL);
@@ -52,7 +52,7 @@ enum Oshibki_SPU SPUConstrtor(Processor_t* spu, int64_t* massiv_comand_bufer)
     return NET_OSHIBOK_SPU;
 }
 
-void SPUDtor(Processor_t* spu, int64_t* massiv_comand_bufer)
+void Dtor_spu(Processor_t* spu, int64_t* massiv_comand_bufer)
 {
     assert(spu != NULL);
     assert(massiv_comand_bufer != NULL);
@@ -85,7 +85,7 @@ int64_t* Chtenie_komand_is_faila(const char* ima_chitaemogo_failaa)
     return massiv_comand_bufer;
 }
 
-enum Oshibki_SPU ExecuteSPU (Processor_t* spu)
+enum Oshibki_SPU Execute_spu (Processor_t* spu)
 {
     assert(spu != NULL);
 

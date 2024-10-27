@@ -30,14 +30,14 @@ static void Zapis_metki(Asembler_t* const asem);
 
 // global --------------------------------------------------------------------------------------------------------------
 
-enum Oshibki_Asemblera Asembler_ctor(Asembler_t* const asem, const char* asm_file_name)
+enum Oshibki_asemblera Asembler_ctor(Asembler_t* const asem, const char* asm_file_name)
 {
     assert(asem != NULL);
     assert(asm_file_name != NULL);
 
     Otkritie_asm (asem, asm_file_name);
-    asem->razmer_mas_com = RAZMER_MASSIVA_KOMAND;
-    asem->massiv_comand = (int64_t*)calloc(asem->razmer_mas_com, sizeof(int64_t));
+    asem->razmer_masiva_comand = RAZMER_MASSIVA_COMAND;
+    asem->massiv_comand = (int64_t*)calloc(asem->razmer_masiva_comand, sizeof(int64_t));
     asem->struct_metok = (Metki_t*)calloc(MAX_COLICHESTVO_METOK, sizeof(Metki_t));
     asem->metka_na_metki = true;
 
@@ -60,11 +60,7 @@ void Asembler_dtor(Asembler_t* const asem)
     memset(asem, 0, sizeof(*asem));
 }
 
-//FIXME Написать Drow
-//FIXME Написать квадратку
-//FIXME Ридми
-
-enum Oshibki_Asemblera Zapis_comand_v_massiv(Asembler_t* const asem)
+enum Oshibki_asemblera Zapis_comand_v_massiv(Asembler_t* const asem)
 {
     assert(asem != NULL);
     
@@ -78,10 +74,10 @@ enum Oshibki_Asemblera Zapis_comand_v_massiv(Asembler_t* const asem)
         size_t adres_nachala_novoy_stroki = (size_t)(strchr(asem->rabota_s_itoy_strokoi.posicia_v_buffere, '\n') 
                                                      - asem->rabota_s_itoy_strokoi.posicia_v_buffere);
 
-        memcpy(asem->rabota_s_itoy_strokoi.bufer_stroki, asem->rabota_s_itoy_strokoi.posicia_v_buffere, 
+        memcpy(asem->rabota_s_itoy_strokoi.buffer_stroki, asem->rabota_s_itoy_strokoi.posicia_v_buffere, 
                adres_nachala_novoy_stroki);
         
-        sscanf(asem->rabota_s_itoy_strokoi.bufer_stroki, "%s", asem->rabota_s_itoy_strokoi.komanda);
+        sscanf(asem->rabota_s_itoy_strokoi.buffer_stroki, "%s", asem->rabota_s_itoy_strokoi.komanda);
 
         switch (Handler(asem))
         {
@@ -98,7 +94,7 @@ enum Oshibki_Asemblera Zapis_comand_v_massiv(Asembler_t* const asem)
     return NET_OSHIBOK;
 }
 
-void Otkritie_bin (Asembler_t* const asem, const char* bin_file_name)
+void Zapis_massiva_cmd_v_fail (Asembler_t* const asem, const char* bin_file_name)
 {
     assert(asem != NULL);
     assert(bin_file_name != NULL);
@@ -142,10 +138,10 @@ static void Realoc_na_massiv_comand(Asembler_t* const asem)
 {
     assert(asem != NULL);
 
-    if (asem->kolichestvo_komand + CHASTOTA_PROVERKI_KOL_COMAND > asem->razmer_mas_com)
+    if (asem->kolichestvo_komand + CHASTOTA_PROVERKI_KOL_COMAND > asem->razmer_masiva_comand)
     {
-        asem->razmer_mas_com = asem->razmer_mas_com * SHAG_DLA_MASSIVA_COMND;
-        asem->massiv_comand = (int64_t*)realloc(asem->massiv_comand, asem->razmer_mas_com * sizeof(int64_t));
+        asem->razmer_masiva_comand = asem->razmer_masiva_comand * SHAG_DLA_MASSIVA_COMAND;
+        asem->massiv_comand = (int64_t*)realloc(asem->massiv_comand, asem->razmer_masiva_comand * sizeof(int64_t));
     }
 }
 
@@ -153,7 +149,7 @@ static void Zanulenie_strok_posle_raboti_so_strokoy(Asembler_t* const asem)
 {
     assert(asem != NULL);
 
-    memset(asem->rabota_s_itoy_strokoi.bufer_stroki, 0, RAZMER_ARGUMENTA * 2 + RAZMER_ARGUMENTA * 2);
+    memset(asem->rabota_s_itoy_strokoi.buffer_stroki, 0, RAZMER_ARGUMENTA * 2 + RAZMER_ARGUMENTA * 2);
     memset(asem->rabota_s_itoy_strokoi.komanda, 0, RAZMER_COMANDI);
     memset(asem->rabota_s_itoy_strokoi.type, 0, RAZMER_COMANDI);
     memset(asem->rabota_s_itoy_strokoi.argument, 0, RAZMER_ARGUMENTA);
@@ -203,9 +199,9 @@ static bool Poisk_pustoy_stroki(Asembler_t* const asem)
 {
     assert(asem != NULL);
 
-    for (size_t i = 0; asem->rabota_s_itoy_strokoi.bufer_stroki[i] != '\0'; i++)
+    for (size_t i = 0; asem->rabota_s_itoy_strokoi.buffer_stroki[i] != '\0'; i++)
     {
-        if (!isspace(asem->rabota_s_itoy_strokoi.bufer_stroki[i])) // если не пробельный символ то 0
+        if (!isspace(asem->rabota_s_itoy_strokoi.buffer_stroki[i])) // если не пробельный символ то 0
         {
             return false;
         }
@@ -315,7 +311,7 @@ static void Rabota_s_poprigunchikami(Asembler_t* const asem)
 
     Realoc_na_massiv_comand(asem);
 
-    sscanf(asem->rabota_s_itoy_strokoi.bufer_stroki, "%s %s",
+    sscanf(asem->rabota_s_itoy_strokoi.buffer_stroki, "%s %s",
            asem->rabota_s_itoy_strokoi.komanda,
            asem->rabota_s_itoy_strokoi.argument);
 
@@ -348,9 +344,9 @@ static void Rabota_s_push(Asembler_t* const asem)
     
     Realoc_na_massiv_comand(asem);
 
-    if (strchr(asem->rabota_s_itoy_strokoi.bufer_stroki, '[') == NULL) 
+    if (strchr(asem->rabota_s_itoy_strokoi.buffer_stroki, '[') == NULL) 
     {
-        int kolichaestvo_slov_v_stroke = sscanf(asem->rabota_s_itoy_strokoi.bufer_stroki, "%s %s + %s",
+        int kolichaestvo_slov_v_stroke = sscanf(asem->rabota_s_itoy_strokoi.buffer_stroki, "%s %s + %s",
                                                 asem->rabota_s_itoy_strokoi.komanda,
                                                 asem->rabota_s_itoy_strokoi.argument,
                                                 asem->rabota_s_itoy_strokoi.argument_2);
@@ -388,11 +384,11 @@ static void Rabota_s_push(Asembler_t* const asem)
         }
 
     }
-    else//(strchr(asem->rabota_s_itoy_strokoi.bufer_stroki, '[') != NULL)
+    else//(strchr(asem->rabota_s_itoy_strokoi.buffer_stroki, '[') != NULL)
     {
         Realoc_na_massiv_comand(asem);
 
-        int kolichaestvo_slov_v_stroke = sscanf(strchr(asem->rabota_s_itoy_strokoi.bufer_stroki, '[') + 1, "%s + %s",
+        int kolichaestvo_slov_v_stroke = sscanf(strchr(asem->rabota_s_itoy_strokoi.buffer_stroki, '[') + 1, "%s + %s",
                                                        asem->rabota_s_itoy_strokoi.argument,
                                                        asem->rabota_s_itoy_strokoi.argument_2);
 
@@ -435,11 +431,11 @@ static void Rabota_s_pop(Asembler_t* const asem)
     assert(asem != NULL);
     Realoc_na_massiv_comand(asem);
 
-    if (strchr(asem->rabota_s_itoy_strokoi.bufer_stroki, '[') == NULL)
+    if (strchr(asem->rabota_s_itoy_strokoi.buffer_stroki, '[') == NULL)
     {
         Realoc_na_massiv_comand(asem);
 
-        sscanf(asem->rabota_s_itoy_strokoi.bufer_stroki, "%s %s", asem->rabota_s_itoy_strokoi.komanda,
+        sscanf(asem->rabota_s_itoy_strokoi.buffer_stroki, "%s %s", asem->rabota_s_itoy_strokoi.komanda,
                                                                    asem->rabota_s_itoy_strokoi.argument);
 
         asem->massiv_comand[asem->kolichestvo_komand++] = Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda);
@@ -450,7 +446,7 @@ static void Rabota_s_pop(Asembler_t* const asem)
     {
         Realoc_na_massiv_comand(asem);
 
-        int kolichaestvo_slov_v_stroke = sscanf(strchr(asem->rabota_s_itoy_strokoi.bufer_stroki, '[') + 1, "%s + %s",
+        int kolichaestvo_slov_v_stroke = sscanf(strchr(asem->rabota_s_itoy_strokoi.buffer_stroki, '[') + 1, "%s + %s",
                                                        asem->rabota_s_itoy_strokoi.argument,
                                                        asem->rabota_s_itoy_strokoi.argument_2);
 

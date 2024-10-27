@@ -12,17 +12,16 @@
 #include "schitivanie_faila.h"
 #include "utils.h"
 
-int main(void) // НУ ТЫ И ДАУН - нахуя void
+int main()//FIXME сделать чтение файла интерактивным
 {
     int64_t* massiv_comand_bufer = Chtenie_komand_is_faila(IMA_CHITAEMOGO_FAILA);
-    //                             ^
-    //                             ---------------- Почему разные стили названий функций
-    Processor_t spu = {}; //                      | 
-    SPUConstrtor(&spu, massiv_comand_bufer); // < | SPUConstrrrrrrtor  
-                                             //   |
-    ExecuteSPU(&spu); //                        < |
-    //                                            |
-    SPUDtor(&spu, massiv_comand_bufer); //      < |
+
+    Processor_t spu = {};
+    Constructor_spu(&spu, massiv_comand_bufer);
+
+    Execute_spu(&spu);
+
+    Dtor_spu(&spu, massiv_comand_bufer);
 
     return 0;
 }
