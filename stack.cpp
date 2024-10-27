@@ -53,9 +53,9 @@ enum Oshibki_Stacka StackPush(Stack_t* stk, StackElem_t complement)
 
 enum Oshibki_Stacka StackPop(Stack_t* stk, StackElem_t* last_recorded_value)
 {
-    enum Oshibki_Stacka oshibka = StackError(stk);
-    if (oshibka != NET_OSHIBOK) { return oshibka; }
-    if (last_recorded_value == NULL) { return OSHIBKA_V_VINIMANII_ZNACHENIA_IS_STEKA; }
+    enum Oshibki_Stacka oshibka = StackError(stk);//-
+    if (oshibka != NET_OSHIBOK) { return oshibka; }//-
+    if (last_recorded_value == NULL) { return OSHIBKA_V_VINIMANII_ZNACHENIA_IS_STEKA; }//-
     if (stk->vacant_place <= stk->capacity / OBRATNIY_SHAG_V_REALOC)
     {
         oshibka = StackUmenshenieRealloc(stk);
@@ -171,24 +171,29 @@ uint64_t Stack_Hash(const uint8_t* ukazatel, size_t razmer)
     return hash;
 }
 
+// enum Oshibki_Stacka Proverka_Hasha_v_nachale_funccii(Stack_t* stk)
+// {
+//     if ((stk) == NULL) { return UKAZTENEL_NA_STRUKTURU_POEHAL; }
+
+
+//     uint64_t bufer_hash_strucktura = stk->hash_strucktura;
+//     uint64_t bufer_hash_massiv = stk->hash_massiv;
+//     stk->hash_strucktura = 0;
+//     stk->hash_massiv = 0;
+
+//     if (bufer_hash_massiv != Stack_Hash((uint8_t*)stk->array_data, stk->capacity * sizeof(StackElem_t))
+//         || bufer_hash_strucktura != Stack_Hash((uint8_t*)stk, sizeof(stk))) 
+//     {return PIZDA_HAKERI_SPIZDILI_CHO_TO; }
+
+//     stk->hash_massiv = bufer_hash_massiv;
+//     stk->hash_strucktura = bufer_hash_strucktura;
+
+
+//     return NET_OSHIBOK;
+// }
+
 enum Oshibki_Stacka Proverka_Hasha_v_nachale_funccii(Stack_t* stk)
 {
-    if ((stk) == NULL) { return UKAZTENEL_NA_STRUKTURU_POEHAL; }
-
-
-    uint64_t bufer_hash_strucktura = stk->hash_strucktura;
-    uint64_t bufer_hash_massiv = stk->hash_massiv;
-    stk->hash_strucktura = 0;
-    stk->hash_massiv = 0;
-
-    if (bufer_hash_massiv != Stack_Hash((uint8_t*)stk->array_data, stk->capacity * sizeof(StackElem_t))
-        || bufer_hash_strucktura != Stack_Hash((uint8_t*)stk, sizeof(stk))) 
-    {return PIZDA_HAKERI_SPIZDILI_CHO_TO; }
-
-    stk->hash_massiv = bufer_hash_massiv;
-    stk->hash_strucktura = bufer_hash_strucktura;
-
-
     return NET_OSHIBOK;
 }
 
