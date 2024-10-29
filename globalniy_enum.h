@@ -36,6 +36,12 @@ enum Comandi
     Registri_bx    = 1,
     Registri_cx    = 2,
     Registri_dx    = 3,
+    Registri_ex    = 4,
+    Registri_fx    = 5,
+    Registri_gx    = 6,
+    Registri_hx    = 7,
+    Registri_ix    = 8,
+    Registri_mx    = 9,
 };
 
 #endif //GLOBALNIY_ENUM_H

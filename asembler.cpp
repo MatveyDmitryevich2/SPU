@@ -271,6 +271,12 @@ static enum Comandi Poisk_registra(const char* bufer_cmd)
     else if (strncmp(bufer_cmd, Registri_bx_, sizeof(Registri_bx_)) == 0) { return Registri_bx;      }
     else if (strncmp(bufer_cmd, Registri_cx_, sizeof(Registri_cx_)) == 0) { return Registri_cx;      }
     else if (strncmp(bufer_cmd, Registri_dx_, sizeof(Registri_dx_)) == 0) { return Registri_dx;      }
+    else if (strncmp(bufer_cmd, Registri_ex_, sizeof(Registri_ex_)) == 0) { return Registri_ex;      }
+    else if (strncmp(bufer_cmd, Registri_fx_, sizeof(Registri_fx_)) == 0) { return Registri_fx;      }
+    else if (strncmp(bufer_cmd, Registri_gx_, sizeof(Registri_gx_)) == 0) { return Registri_gx;      }
+    else if (strncmp(bufer_cmd, Registri_hx_, sizeof(Registri_hx_)) == 0) { return Registri_hx;      }
+    else if (strncmp(bufer_cmd, Registri_ix_, sizeof(Registri_ix_)) == 0) { return Registri_ix;      }
+    else if (strncmp(bufer_cmd, Registri_mx_, sizeof(Registri_mx_)) == 0) { return Registri_mx;      }
     else                                                                  { return Comandi_pizdeeec; }
 }
 

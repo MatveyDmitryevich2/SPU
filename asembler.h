@@ -118,6 +118,13 @@ static const char Registri_ax_ [] = "ax";
 static const char Registri_bx_ [] = "bx";
 static const char Registri_cx_ [] = "cx";
 static const char Registri_dx_ [] = "dx";
+static const char Registri_ex_ [] = "ex";
+static const char Registri_fx_ [] = "fx";
+static const char Registri_gx_ [] = "gx";
+static const char Registri_hx_ [] = "hx";
+static const char Registri_ix_ [] = "ix";
+static const char Registri_mx_ [] = "mx";
+
 
 
 enum Oshibki_asemblera Asembler_ctor(Asembler_t* const asem, const char* asm_file_name);

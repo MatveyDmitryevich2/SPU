@@ -93,6 +93,7 @@ enum Oshibki_SPU Execute_spu (Processor_t* spu)
     while (!spu->vikluchatel_cikla)
     {
         Decode(spu);
+        //DumpSPU(spu);
     }
 
     return NET_OSHIBOK_SPU;
@@ -184,12 +185,12 @@ void Decode(Processor_t* spu)
 
 static void DrowSPU(Processor_t* spu) //с тысячного адерса начинается видеопамять
 {
-    for(size_t a = 1; a <= 50; a++)
+    for(size_t a = 0; a <= 50; a++)
     {
-        for (size_t i = 0; i < 50; i++)
+        for (size_t i = 0; i <= 50; i++)
         {
-            if (spu->ram[i + 1000] == 0) { fprintf(stderr, "%c", '*'); }
-            else                         { fprintf(stderr, "%c", '0'); }
+            if (spu->ram[i + a * 51 + 1000] == 0) { fprintf(stderr, "%c ", '*'); }
+            else                                  { fprintf(stderr, "%c ", '8'); }
         }
         fprintf(stderr, "\n");
     }
@@ -211,7 +212,7 @@ static void RetSPU(Processor_t* spu)
     int64_t a = 0;
     if (StackPop(&(spu->stk), &a) > 0) assert(0);
     spu->ip = a;
-    fprintf(stderr, "\n---a = %ld---\n", a);
+    //fprintf(stderr, "\n---a = %ld---\n", a);
     DEB_PR("22\n");
 }
 
@@ -275,10 +276,10 @@ static void DivvSPU(Processor_t* spu)
     int64_t a = 0;
     int64_t b = 0;
 
-    if(a == 0) { assert(0); }
-
     if (StackPop(&(spu->stk), &a) > 0) assert(0);
     if (StackPop(&(spu->stk), &b) > 0) assert(0);
+
+    if (a == 0) { assert(0); }
 
     if (StackPush(&(spu->stk), b / a) > 0) assert(0);
 
@@ -345,12 +346,26 @@ static void CosSPU(Processor_t* spu)
 
 static void DumpSPU(Processor_t* spu)
 {
-    for (long long i = (long long)spu->stk.vacant_place - 1; i >= 0; i--)
+    fprintf(stderr, "   ----------\n");
+    fprintf(stderr, "   ----------\n");
+    for (long long i = 0; i <= (long long)spu->stk.vacant_place - 1; i++)
     {
         fprintf(stderr, "   [%lld] = ", i);
         fprintf(stderr, "%lu\n", (long unsigned)spu->stk.array_data[i]);
     }
-    fprintf(stderr, "   ---\n");
+    fprintf(stderr, "   ----------\n");
+
+    fprintf(stderr, "   [ax] = ");
+    fprintf(stderr, "%ld\n", spu->registers[0]);
+    fprintf(stderr, "   [bx] = ");
+    fprintf(stderr, "%ld\n", spu->registers[1]);
+    fprintf(stderr, "   [cx] = ");
+    fprintf(stderr, "%ld\n", spu->registers[2]);
+    fprintf(stderr, "   [dx] = ");
+    fprintf(stderr, "%ld\n", spu->registers[3]);
+
+    fprintf(stderr, "   ----------\n");
+    fprintf(stderr, "   ----------\n\n");
 
     spu->ip += PEREHOD_NA_KOMANDU;
     DEB_PR("12\n");
