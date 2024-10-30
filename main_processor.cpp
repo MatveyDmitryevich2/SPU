@@ -12,9 +12,9 @@
 #include "schitivanie_faila.h"
 #include "utils.h"
 
-int main()//FIXME сделать чтение файла интерактивным
+int main()
 {
-    int64_t* massiv_comand_bufer = Chtenie_komand_is_faila(IMA_CHITAEMOGO_FAILA);
+    double* massiv_comand_bufer = Chtenie_komand_is_faila(IMA_CHITAEMOGO_FAILA);
 
     Processor_t spu = {};
     Constructor_spu(&spu, massiv_comand_bufer);

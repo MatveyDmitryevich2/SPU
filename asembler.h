@@ -75,7 +75,7 @@ struct Asembler_t
 
     char* buffer;
 
-    int64_t* massiv_comand;
+    double* massiv_comand;
     size_t razmer_masiva_comand;
     size_t kolichestvo_komand;
 

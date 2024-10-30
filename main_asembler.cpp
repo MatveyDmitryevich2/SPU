@@ -31,10 +31,11 @@ int main(const int argc, const char *argv[])
         fprintf(stderr, "---%s---%lu---\n", asem.struct_metok[i].metka, asem.struct_metok[i].adres_stroki);
     }
 
-    for (size_t i = 0; i < asem.kolichestvo_komand; i++)
+    for (size_t i = 0; i < asem.kolichestvo_komand * sizeof(double); i++)
     {
         //fprintf(stderr, "[%d]: %d\n", i, asem.massiv_comand[i]);
-        fprintf(stderr, "%ld ", asem.massiv_comand[i]);
+        if (i%16 == 0) { fprintf(stderr, "\n"); }
+        fprintf(stderr, "%4hx", *((char*)asem.massiv_comand + i));
     }
 
     Zapis_massiva_cmd_v_fail (&asem, KONECNIY_FAIL);

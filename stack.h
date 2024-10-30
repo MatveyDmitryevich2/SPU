@@ -8,7 +8,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-typedef int64_t StackElem_t;
+typedef double StackElem_t;
 static const int SHAG_V_REALOC = 2;
 static const int OBRATNIY_SHAG_V_REALOC = 4;
 static const uint64_t KONOREYKA = 29304148;

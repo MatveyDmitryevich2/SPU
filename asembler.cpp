@@ -37,7 +37,7 @@ enum Oshibki_asemblera Asembler_ctor(Asembler_t* const asem, const char* asm_fil
 
     Otkritie_asm (asem, asm_file_name);
     asem->razmer_masiva_comand = RAZMER_MASSIVA_COMAND;
-    asem->massiv_comand = (int64_t*)calloc(asem->razmer_masiva_comand, sizeof(int64_t));
+    asem->massiv_comand = (double*)calloc(asem->razmer_masiva_comand, sizeof(double));
     asem->struct_metok = (Metki_t*)calloc(MAX_COLICHESTVO_METOK, sizeof(Metki_t));
     asem->metka_na_metki = true;
 
@@ -84,7 +84,7 @@ enum Oshibki_asemblera Zapis_comand_v_massiv(Asembler_t* const asem)
             case METKA: { Zapis_metki(asem); } break;
             case KOMANDA: { Rabota_s_komandoi(asem); } break;
             case PUSTAIA_STROKA: {} break;
-            case SINTAKSIS_OSHIBKA: {} break; //доделаьб
+            case SINTAKSIS_OSHIBKA: {} break; //доделать
             default: assert(SINTAKSIS_OSHIBKA);
         }
 
@@ -107,7 +107,7 @@ void Zapis_massiva_cmd_v_fail (Asembler_t* const asem, const char* bin_file_name
         assert(0);
     }
 
-    fwrite(asem->massiv_comand, sizeof(int64_t), asem->kolichestvo_komand, komandi_v_chislah);
+    fwrite(asem->massiv_comand, sizeof(double), asem->kolichestvo_komand, komandi_v_chislah);
     fclose(komandi_v_chislah);
     komandi_v_chislah = NULL;
 }
@@ -152,7 +152,7 @@ static void Realoc_na_massiv_comand(Asembler_t* const asem)
     if (asem->kolichestvo_komand + CHASTOTA_PROVERKI_KOL_COMAND > asem->razmer_masiva_comand)
     {
         asem->razmer_masiva_comand = asem->razmer_masiva_comand * SHAG_DLA_MASSIVA_COMAND;
-        asem->massiv_comand = (int64_t*)realloc(asem->massiv_comand, asem->razmer_masiva_comand * sizeof(int64_t));
+        asem->massiv_comand = (double*)realloc(asem->massiv_comand, asem->razmer_masiva_comand * sizeof(double));
     }
 }
 
@@ -286,7 +286,7 @@ static void Rabota_s_komandoi(Asembler_t* const asem)
 
     Comandi komanda = Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda);
 
-    fprintf(stderr, "%d\n", komanda);
+    //fprintf(stderr, "%d\n", komanda);
 
     if ((komanda >= Comandi_sub && komanda <= Comandi_hlt)
         || komanda == Comandi_ret
@@ -319,7 +319,7 @@ static void Rabota_s_comandami_bez_argumenta(Asembler_t* const asem)
 
     Realoc_na_massiv_comand(asem);
 
-    asem->massiv_comand[asem->kolichestvo_komand++] = Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda);
+    asem->massiv_comand[asem->kolichestvo_komand++] = (double)Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda);
 }
 
 static void Rabota_s_poprigunchikami(Asembler_t* const asem)
@@ -332,9 +332,9 @@ static void Rabota_s_poprigunchikami(Asembler_t* const asem)
            asem->rabota_s_itoy_strokoi.komanda,
            asem->rabota_s_itoy_strokoi.argument);
 
-    asem->massiv_comand[asem->kolichestvo_komand] = Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda);
+    asem->massiv_comand[asem->kolichestvo_komand] = (double)Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda);
     asem->kolichestvo_komand++;
-    asem->massiv_comand[asem->kolichestvo_komand] = Ishet_metku_dla_jumpa(asem);
+    asem->massiv_comand[asem->kolichestvo_komand] = (double)Ishet_metku_dla_jumpa(asem);
     asem->kolichestvo_komand++;
 }
 
@@ -371,33 +371,29 @@ static void Rabota_s_push(Asembler_t* const asem)
         if (kolichaestvo_slov_v_stroke == 2)
         {
             Realoc_na_massiv_comand(asem);
-            asem->massiv_comand[asem->kolichestvo_komand++] = Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda);
+            asem->massiv_comand[asem->kolichestvo_komand++] = (double)Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda);
 
             if (Poisk_registra(asem->rabota_s_itoy_strokoi.argument) < 0)
-            { 
-                asem->massiv_comand[asem->kolichestvo_komand++] = PERVIY_BIT;
-                asem->massiv_comand[asem->kolichestvo_komand++]
-                =
-                (enum Comandi)strtol(asem->rabota_s_itoy_strokoi.argument, NULL, 10);
+            {
+                asem->massiv_comand[asem->kolichestvo_komand++] = (double)PERVIY_BIT;
+                asem->massiv_comand[asem->kolichestvo_komand++] = strtod(asem->rabota_s_itoy_strokoi.argument, NULL);
             }
             else 
             { 
-                asem->massiv_comand[asem->kolichestvo_komand++] = VTOROY_BIT;
+                asem->massiv_comand[asem->kolichestvo_komand++] = (double)VTOROY_BIT;
                 asem->massiv_comand[asem->kolichestvo_komand++]
                 =
-                Poisk_registra(asem->rabota_s_itoy_strokoi.argument);
+                (double)Poisk_registra(asem->rabota_s_itoy_strokoi.argument);
             }
         }
         if (kolichaestvo_slov_v_stroke == 3)
         {
             Realoc_na_massiv_comand(asem);
 
-            asem->massiv_comand[asem->kolichestvo_komand++] = Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda);
-            asem->massiv_comand[asem->kolichestvo_komand++] = PERVIY_BIT + VTOROY_BIT;
-            asem->massiv_comand[asem->kolichestvo_komand++]
-            =
-            (enum Comandi)strtol(asem->rabota_s_itoy_strokoi.argument, NULL, 10);
-            asem->massiv_comand[asem->kolichestvo_komand++] = Poisk_registra(asem->rabota_s_itoy_strokoi.argument_2);
+            asem->massiv_comand[asem->kolichestvo_komand++] = (double)Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda);
+            asem->massiv_comand[asem->kolichestvo_komand++] = (double)(PERVIY_BIT + VTOROY_BIT);
+            asem->massiv_comand[asem->kolichestvo_komand++] = strtod(asem->rabota_s_itoy_strokoi.argument, NULL);
+            asem->massiv_comand[asem->kolichestvo_komand++] = (double)Poisk_registra(asem->rabota_s_itoy_strokoi.argument_2);
         }
 
     }
@@ -409,7 +405,7 @@ static void Rabota_s_push(Asembler_t* const asem)
                                                        asem->rabota_s_itoy_strokoi.argument,
                                                        asem->rabota_s_itoy_strokoi.argument_2);
 
-        asem->massiv_comand[asem->kolichestvo_komand++] = Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda);
+        asem->massiv_comand[asem->kolichestvo_komand++] = (double)Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda);
 
         if (kolichaestvo_slov_v_stroke == 1)
         {
@@ -417,28 +413,24 @@ static void Rabota_s_push(Asembler_t* const asem)
 
             if (Poisk_registra(asem->rabota_s_itoy_strokoi.argument) < 0)
             {
-                asem->massiv_comand[asem->kolichestvo_komand++] = PERVIY_BIT + TRETIY_BIT;
-                asem->massiv_comand[asem->kolichestvo_komand++]
-                =
-                (enum Comandi)strtol(asem->rabota_s_itoy_strokoi.argument, NULL, 10);
+                asem->massiv_comand[asem->kolichestvo_komand++] = (double)(PERVIY_BIT + TRETIY_BIT);
+                asem->massiv_comand[asem->kolichestvo_komand++] = strtod(asem->rabota_s_itoy_strokoi.argument, NULL);
             }
             else
             {
-                asem->massiv_comand[asem->kolichestvo_komand++] = VTOROY_BIT + TRETIY_BIT;
+                asem->massiv_comand[asem->kolichestvo_komand++] = (double)(VTOROY_BIT + TRETIY_BIT);
                 asem->massiv_comand[asem->kolichestvo_komand++]
                 =
-                Poisk_registra(asem->rabota_s_itoy_strokoi.argument);
+                (double)Poisk_registra(asem->rabota_s_itoy_strokoi.argument);
             }
         }
         if (kolichaestvo_slov_v_stroke == 2)
         {
             Realoc_na_massiv_comand(asem);
 
-            asem->massiv_comand[asem->kolichestvo_komand++] = PERVIY_BIT + VTOROY_BIT + TRETIY_BIT;
-            asem->massiv_comand[asem->kolichestvo_komand++]
-            =
-            (enum Comandi)strtol(asem->rabota_s_itoy_strokoi.argument, NULL, 10);
-            asem->massiv_comand[asem->kolichestvo_komand++] = Poisk_registra(asem->rabota_s_itoy_strokoi.argument_2);
+            asem->massiv_comand[asem->kolichestvo_komand++] = (double)(PERVIY_BIT + VTOROY_BIT + TRETIY_BIT);
+            asem->massiv_comand[asem->kolichestvo_komand++] = strtod(asem->rabota_s_itoy_strokoi.argument, NULL);
+            asem->massiv_comand[asem->kolichestvo_komand++] = (double)Poisk_registra(asem->rabota_s_itoy_strokoi.argument_2);
         }
     }
 }
@@ -455,9 +447,9 @@ static void Rabota_s_pop(Asembler_t* const asem)
         sscanf(asem->rabota_s_itoy_strokoi.buffer_stroki, "%s %s", asem->rabota_s_itoy_strokoi.komanda,
                                                                    asem->rabota_s_itoy_strokoi.argument);
 
-        asem->massiv_comand[asem->kolichestvo_komand++] = Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda);
-        asem->massiv_comand[asem->kolichestvo_komand++] = CHETVERTIY_BIT;
-        asem->massiv_comand[asem->kolichestvo_komand++] = Poisk_registra(asem->rabota_s_itoy_strokoi.argument);
+        asem->massiv_comand[asem->kolichestvo_komand++] = (double)Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda);
+        asem->massiv_comand[asem->kolichestvo_komand++] = (double)CHETVERTIY_BIT;
+        asem->massiv_comand[asem->kolichestvo_komand++] = (double)Poisk_registra(asem->rabota_s_itoy_strokoi.argument);
     }
     else
     {
@@ -467,17 +459,15 @@ static void Rabota_s_pop(Asembler_t* const asem)
                                                        asem->rabota_s_itoy_strokoi.argument,
                                                        asem->rabota_s_itoy_strokoi.argument_2);
 
-        asem->massiv_comand[asem->kolichestvo_komand++] = Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda);
+        asem->massiv_comand[asem->kolichestvo_komand++] = (double)Poisk_komandi(asem->rabota_s_itoy_strokoi.komanda);
         
         if (kolichaestvo_slov_v_stroke == 2)
         {
             Realoc_na_massiv_comand(asem);
             
-            asem->massiv_comand[asem->kolichestvo_komand++] = VTOROY_BIT + PERVIY_BIT;
-            asem->massiv_comand[asem->kolichestvo_komand++]
-            =
-            (enum Comandi)strtol(asem->rabota_s_itoy_strokoi.argument, NULL, 10);
-            asem->massiv_comand[asem->kolichestvo_komand++] = Poisk_registra(asem->rabota_s_itoy_strokoi.argument_2);
+            asem->massiv_comand[asem->kolichestvo_komand++] = (double)(VTOROY_BIT + PERVIY_BIT);
+            asem->massiv_comand[asem->kolichestvo_komand++] = strtod(asem->rabota_s_itoy_strokoi.argument, NULL);
+            asem->massiv_comand[asem->kolichestvo_komand++] = (double)Poisk_registra(asem->rabota_s_itoy_strokoi.argument_2);
         }
         if (kolichaestvo_slov_v_stroke == 1)
         {
@@ -485,15 +475,13 @@ static void Rabota_s_pop(Asembler_t* const asem)
 
             if (Poisk_registra(asem->rabota_s_itoy_strokoi.argument) < 0)
             {
-                asem->massiv_comand[asem->kolichestvo_komand++] = PERVIY_BIT;
-                asem->massiv_comand[asem->kolichestvo_komand++]
-                =
-                (enum Comandi)strtol(asem->rabota_s_itoy_strokoi.argument, NULL, 10);
+                asem->massiv_comand[asem->kolichestvo_komand++] = (double)PERVIY_BIT;
+                asem->massiv_comand[asem->kolichestvo_komand++] = strtod(asem->rabota_s_itoy_strokoi.argument, NULL);
             }
             else
             {
-                asem->massiv_comand[asem->kolichestvo_komand++] = VTOROY_BIT;
-                asem->massiv_comand[asem->kolichestvo_komand++] = Poisk_registra(asem->rabota_s_itoy_strokoi.argument);
+                asem->massiv_comand[asem->kolichestvo_komand++] = (double)VTOROY_BIT;
+                asem->massiv_comand[asem->kolichestvo_komand++] = (double)Poisk_registra(asem->rabota_s_itoy_strokoi.argument);
             }
         }
     }

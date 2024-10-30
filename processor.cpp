@@ -38,8 +38,18 @@ static void PopSPU(Processor_t* spu);
 static void CallSPU(Processor_t* spu);
 static void RetSPU(Processor_t* spu);
 static void DrowSPU(Processor_t* spu);
+static int Sravnenie(double a, double b);
 
-enum Oshibki_SPU Constructor_spu(Processor_t* spu, int64_t* massiv_comand_bufer)
+static int Sravnenie(double a, double b)
+{
+    int resultat = 0;
+    if (fabs(a - b) < 0.0001)
+        resultat = 1;
+
+    return resultat;
+}
+
+enum Oshibki_SPU Constructor_spu(Processor_t* spu, double* massiv_comand_bufer)
 {
     assert(spu != NULL);
     assert(massiv_comand_bufer != NULL);
@@ -53,7 +63,7 @@ enum Oshibki_SPU Constructor_spu(Processor_t* spu, int64_t* massiv_comand_bufer)
     return NET_OSHIBOK_SPU;
 }
 
-void Dtor_spu(Processor_t* spu, int64_t* massiv_comand_bufer)
+void Dtor_spu(Processor_t* spu, double* massiv_comand_bufer)
 {
     assert(spu != NULL);
     assert(massiv_comand_bufer != NULL);
@@ -66,7 +76,7 @@ void Dtor_spu(Processor_t* spu, int64_t* massiv_comand_bufer)
     memset(spu, 0, sizeof(spu));
 }
 
-int64_t* Chtenie_komand_is_faila(const char* ima_chitaemogo_failaa) 
+double* Chtenie_komand_is_faila(const char* ima_chitaemogo_failaa) 
 {
     assert(ima_chitaemogo_failaa != NULL);
 
@@ -77,9 +87,9 @@ int64_t* Chtenie_komand_is_faila(const char* ima_chitaemogo_failaa)
     }
 
     size_t razmer_faila_bytes = Chitaet_razmer_faila(komandi_v_chislah);
-    assert(razmer_faila_bytes % sizeof(int64_t) == 0); 
+    //assert(razmer_faila_bytes % sizeof(int64_t) == 0); 
 
-    int64_t* massiv_comand_bufer = (int64_t*)calloc(razmer_faila_bytes, sizeof(char));
+    double* massiv_comand_bufer = (double*)calloc(razmer_faila_bytes, sizeof(char));
     fread(massiv_comand_bufer, sizeof(char), razmer_faila_bytes, komandi_v_chislah);
     fclose (komandi_v_chislah);
 
@@ -102,8 +112,8 @@ enum Oshibki_SPU Execute_spu (Processor_t* spu)
 int64_t FetchInstruction(Processor_t* spu)
 {
     assert(spu != NULL);
-    
-    return spu->massiv_comand[spu->ip];
+    //fprintf(stderr, "\nspu->massiv_comand[spu->ip] = %ld\n\n ", (int64_t)*(double*)&spu->massiv_comand[spu->ip]);
+    return (int64_t)*(double*)&spu->massiv_comand[spu->ip];
 }
 
 void Decode(Processor_t* spu)
@@ -209,9 +219,9 @@ static void CallSPU(Processor_t* spu)
 
 static void RetSPU(Processor_t* spu)
 {
-    int64_t a = 0;
+    double a = 0;
     if (StackPop(&(spu->stk), &a) > 0) assert(0);
-    spu->ip = a;
+    spu->ip = (int64_t)a;
     //fprintf(stderr, "\n---a = %ld---\n", a);
     DEB_PR("22\n");
 }
@@ -220,11 +230,11 @@ static void PushSPU(Processor_t* spu)
 {
     spu->ip++;
     int64_t type_pu = FetchInstruction(spu); spu->ip++;
-    int64_t resultat_pu = 0;
+    double resultat_pu = 0;
 
-    if (type_pu & SMOTR_PERVIY_BIT) { resultat_pu = FetchInstruction(spu); spu->ip++; }
+    if (type_pu & SMOTR_PERVIY_BIT) { resultat_pu = spu->massiv_comand[spu->ip]; spu->ip++; }
     if (type_pu & SMOTR_VTOROY_BIT) { resultat_pu += spu->registers[FetchInstruction(spu)]; spu->ip++; }
-    if (type_pu & SMOTR_TRETIY_BIT) { resultat_pu = spu->ram[resultat_pu]; spu->ip++; }
+    if (type_pu & SMOTR_TRETIY_BIT) { resultat_pu = spu->ram[(int64_t)resultat_pu]; }
 
     if (StackPush(&(spu->stk), resultat_pu) > 0) assert(0);
 
@@ -233,8 +243,8 @@ static void PushSPU(Processor_t* spu)
 
 static void AddSPU(Processor_t* spu)
 {
-    int64_t a = 0;
-    int64_t b = 0;
+    double a = 0;
+    double b = 0;
     if (StackPop(&(spu->stk), &a) > 0) assert(0);
     if (StackPop(&(spu->stk), &b) > 0) assert(0);
 
@@ -247,8 +257,8 @@ static void AddSPU(Processor_t* spu)
 
 static void SubSPU(Processor_t* spu)
 {
-    int64_t a = 0;
-    int64_t b = 0;
+    double a = 0;
+    double b = 0;
     if (StackPop(&(spu->stk), &a) > 0) assert(0);
     if (StackPop(&(spu->stk), &b) > 0) assert(0);
 
@@ -260,8 +270,8 @@ static void SubSPU(Processor_t* spu)
 
 static void MulSPU(Processor_t* spu)
 {
-    int64_t a = 0;
-    int64_t b = 0;
+    double a = 0;
+    double b = 0;
     if (StackPop(&(spu->stk), &a) > 0) assert(0);
     if (StackPop(&(spu->stk), &b) > 0) assert(0);
 
@@ -273,13 +283,13 @@ static void MulSPU(Processor_t* spu)
 
 static void DivvSPU(Processor_t* spu)
 {
-    int64_t a = 0;
-    int64_t b = 0;
+    double a = 0;
+    double b = 0;
 
     if (StackPop(&(spu->stk), &a) > 0) assert(0);
     if (StackPop(&(spu->stk), &b) > 0) assert(0);
 
-    if (a == 0) { assert(0); }
+    if (Sravnenie(a, b)) { assert(0); }
 
     if (StackPush(&(spu->stk), b / a) > 0) assert(0);
 
@@ -289,10 +299,10 @@ static void DivvSPU(Processor_t* spu)
 
 static void OutSPU(Processor_t* spu)
 {
-    int64_t a = 0;
+    double a = 0;
     if (StackPop(&(spu->stk), &a) > 0) assert(0);
 
-    printf("%ld\n", a); 
+    printf("%.2f\n", a); 
     
     spu->ip += PEREHOD_NA_KOMANDU;
     DEB_PR("7\n");
@@ -300,8 +310,8 @@ static void OutSPU(Processor_t* spu)
 
 static void InSPU(Processor_t* spu)
 {
-    int64_t a = 0;
-    scanf("%ld", &a);
+    double a = 0;
+    scanf("%lf", &a);
     if (StackPush(&(spu->stk), a) > 0) assert(0);
 
     spu->ip += PEREHOD_NA_KOMANDU;
@@ -310,7 +320,7 @@ static void InSPU(Processor_t* spu)
 
 static void SqrtSPU(Processor_t* spu)
 {
-    int64_t a = 0;
+    double a = 0;
 
     if(a < 0) { assert(0); }
 
@@ -324,7 +334,7 @@ static void SqrtSPU(Processor_t* spu)
 
 static void SinSPU(Processor_t* spu)
 {
-    int64_t a = 0;
+    double a = 0;
     if (StackPop(&(spu->stk), &a) > 0) assert(0);
 
     if (StackPush(&(spu->stk), sin(a)) > 0) assert(0);
@@ -335,7 +345,7 @@ static void SinSPU(Processor_t* spu)
 
 static void CosSPU(Processor_t* spu)
 {
-    int64_t a = 0;
+    double a = 0;
     if (StackPop(&(spu->stk), &a) > 0) assert(0);
 
     if (StackPush(&(spu->stk), cos(a)) > 0) assert(0);
@@ -350,19 +360,19 @@ static void DumpSPU(Processor_t* spu)
     fprintf(stderr, "   ----------\n");
     for (long long i = 0; i <= (long long)spu->stk.vacant_place - 1; i++)
     {
-        fprintf(stderr, "   [%lld] = ", i);
-        fprintf(stderr, "%lu\n", (long unsigned)spu->stk.array_data[i]);
+        fprintf(stderr, "   [%llu] = ", i);
+        fprintf(stderr, "%.2f\n", spu->stk.array_data[i]);
     }
     fprintf(stderr, "   ----------\n");
 
     fprintf(stderr, "   [ax] = ");
-    fprintf(stderr, "%ld\n", spu->registers[0]);
+    fprintf(stderr, "%.2f\n", spu->registers[0]);
     fprintf(stderr, "   [bx] = ");
-    fprintf(stderr, "%ld\n", spu->registers[1]);
+    fprintf(stderr, "%.2f\n", spu->registers[1]);
     fprintf(stderr, "   [cx] = ");
-    fprintf(stderr, "%ld\n", spu->registers[2]);
+    fprintf(stderr, "%.2f\n", spu->registers[2]);
     fprintf(stderr, "   [dx] = ");
-    fprintf(stderr, "%ld\n", spu->registers[3]);
+    fprintf(stderr, "%.2f\n", spu->registers[3]);
 
     fprintf(stderr, "   ----------\n");
     fprintf(stderr, "   ----------\n\n");
@@ -379,79 +389,79 @@ static void HltSPU(Processor_t* spu)
 
 static void JaSPU(Processor_t* spu)
 {
-    int64_t a = 0;
-    int64_t b = 0;
+    double a = 0;
+    double b = 0;
     if (StackPop(&(spu->stk), &a) > 0) assert(0);
     if (StackPop(&(spu->stk), &b) > 0) assert(0);
     
-    if (b > a) { spu->ip = spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
+    if (b > a) { spu->ip = (int64_t)spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
     else { spu->ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
     DEB_PR("14\n");
 }
 
 static void JaeSPU(Processor_t* spu)
 {
-    int64_t a = 0;
-    int64_t b = 0;
+    double a = 0;
+    double b = 0;
     if (StackPop(&(spu->stk), &a) > 0) assert(0);
     if (StackPop(&(spu->stk), &b) > 0) assert(0);
 
-    if (b >= a) { spu->ip = spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
+    if ((b > a) || Sravnenie(a, b)) { spu->ip = (int64_t)spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
     else { spu->ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
     DEB_PR("15\n");
 }
 
 static void JbSPU(Processor_t* spu)
 {
-    int64_t a = 0;
-    int64_t b = 0;
+    double a = 0;
+    double b = 0;
     if (StackPop(&(spu->stk), &a) > 0) assert(0);
     if (StackPop(&(spu->stk), &b) > 0) assert(0);
 
-    if (b < a) { spu->ip = spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
+    if (b < a) { spu->ip = (int64_t)spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
     else { spu->ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
     DEB_PR("16\n");
 }
 
 static void JbeSPU(Processor_t* spu)
 {
-    int64_t a = 0;
-    int64_t b = 0;
+    double a = 0;
+    double b = 0;
     if (StackPop(&(spu->stk), &a) > 0) assert(0);
     if (StackPop(&(spu->stk), &b) > 0) assert(0);
 
-    if (b <= a) { spu->ip = spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
+    if ((b < a) || Sravnenie(a, b)) { spu->ip = (int64_t)spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
     else { spu->ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
     DEB_PR("17\n");
 }
 
 static void JeSPU(Processor_t* spu)
 {
-    int64_t a = 0;
-    int64_t b = 0;
+    double a = 0;
+    double b = 0;
     if (StackPop(&(spu->stk), &a) > 0) assert(0);
     if (StackPop(&(spu->stk), &b) > 0) assert(0);
 
-    if (b == a) { spu->ip = spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
+    if (Sravnenie(a, b)) { spu->ip = (int64_t)spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
     else { spu->ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
     DEB_PR("18\n");
 }
 
 static void JneSPU(Processor_t* spu)
 {
-    int64_t a = 0;
-    int64_t b = 0;
+    double a = 0;
+    double b = 0;
     if (StackPop(&(spu->stk), &a) > 0) assert(0);
     if (StackPop(&(spu->stk), &b) > 0) assert(0);
 
-    if(b != a) { spu->ip = spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
+    if(!Sravnenie(a, b)) { spu->ip = (int64_t)spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU]; }                      
     else { spu->ip += PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT; }
     DEB_PR("19\n");
 }
 
 static void JmpSPU(Processor_t* spu)
 {
-    spu->ip = spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU];
+    spu->ip = (int64_t)spu->massiv_comand[spu->ip + PEREHOD_NA_KOMANDU];
     DEB_PR("20\n");
 }
 
@@ -461,7 +471,7 @@ static void PopSPU(Processor_t* spu)
     int64_t type_po = FetchInstruction(spu); spu->ip++;
     int64_t resultat_po = 0;
 
-    int64_t a = 0;
+    double a = 0;
     if (StackPop(&(spu->stk), &a) > 0) assert(0); 
     
     if (type_po & SMOTR_CHETVERTIY_BIT)
@@ -481,7 +491,7 @@ static void PopSPU(Processor_t* spu)
             resultat_po += spu->registers[FetchInstruction(spu)];
             spu->ip++; 
         }
-
+        //fprintf(stderr, "\nresultat_po = %ld\n\n", resultat_po);
         spu->ram[resultat_po] = a;
     }
 
