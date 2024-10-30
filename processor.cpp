@@ -209,7 +209,6 @@ static void DrowSPU(Processor_t* spu) //с тысячного адерса на�
     DEB_PR("23\n");
 }
 
-
 static void CallSPU(Processor_t* spu)
 {
     if (StackPush(&(spu->stk), spu->ip + PEREHOD_NA_KOMANDU + PEREHOD_NA_AEGUMENT) > 0) assert(0);

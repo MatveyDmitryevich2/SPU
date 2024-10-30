@@ -1,6 +1,8 @@
 main:
                 push 50
                 pop  ax
+                push 10
+                pop ex
                 push 0
                 pop cx
                 push 0
@@ -117,14 +119,8 @@ secs19:
 
                 add
 
-                push ax
-                push 2
-                div
-
-                push ax
-                push 2
-                div
-
+                push ex
+                push ex
                 mul
 
                 ja delaem_3
